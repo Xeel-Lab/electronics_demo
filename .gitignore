@@ -35,3 +35,6 @@ __pycache__/
 
 # Ruff
 .ruff_cache/
+
+# React
+frontend/assets

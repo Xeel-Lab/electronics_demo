@@ -1,7 +1,7 @@
 version: "2"
-authtoken: token_here
+authtoken: your_token
 tunnels:
   proxy:
     proto: http
-    addr: 8080
+    addr: 80
     domain: brandon-postsystolic-similarly.ngrok-free.dev

@@ -212,8 +212,12 @@ export default defineConfig(({}) => ({
     host: true,
     port: 4444,
     strictPort: true,
-    cors: true,
-    allowedHosts: "all",
+    cors: { 
+      origin: "*",
+      methods: ["GET", "POST", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    },
+    allowedHosts: true,
   },
   esbuild: {
     jsx: "automatic",
