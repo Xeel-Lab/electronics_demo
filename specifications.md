@@ -115,7 +115,7 @@ Questo documento descrive i passaggi necessari per sostituire i prodotti attuali
 - [x]  **Rimuovere i prodotti vecchi**: Elimina la definizione locale di `INITIAL_CART_ITEMS` in `frontend/src/pizzaz-shop/index.tsx`.
 
 ### 2.2 Compatibilità dei tipi `CartItem`
-- [x]  **Verificare la compatibilità**: Assicurati che il tipo `CartItem` definito in `frontend/py/new_initial_cart_items.ts` sia compatibile con quello usato in `frontend/src/pizzaz-shop/index.tsx` e `frontend/src/shopping-cart/index.tsx`. Potrebbe essere necessario consolidare le definizioni o adattarle.
+- [x]  **Verificare la compatibilità**: Assicurati che il tipo `CartItem` definito in `py/new_initial_cart_items.ts` sia compatibile con quello usato in `src/pizzaz-shop/index.tsx` e `src/shopping-cart/index.tsx`. Potrebbe essere necessario consolidare le definizioni o adattarle.
   - **Nota**: Per dettagli su bug trovati e risolti, vedere `frontend/bugs.md` sezione "Bug risolti - 2.2 Compatibilità dei tipi `CartItem`"
 
 ### 2.3 Migrazione dati da JSON a Database MotherDuck
