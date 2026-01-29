@@ -282,13 +282,15 @@ async function main() {
 
     console.log("new hash: ", h);
 
-    const defaultBaseUrl = "http://localhost:4444";
+    // WARNING: REPLACE WITH YOUR NGROK URL
+    const defaultBaseUrl = "https://brandon-postsystolic-similarly.ngrok-free.dev";
     const baseUrlCandidate = process.env.BASE_URL?.trim() ?? "";
     const baseUrlRaw = baseUrlCandidate.length > 0 ? baseUrlCandidate : defaultBaseUrl;
     const normalizedBaseUrl = baseUrlRaw.replace(/\/+$/, "") || defaultBaseUrl;
     console.log(`Using BASE_URL ${normalizedBaseUrl} for generated HTML`);
 
     for (const name of builtNames) {
+      const css = fs.readFileSync(path.join(outDir, `${name}-${h}.css`), { encoding: "utf8" });
       const dir = outDir;
       const hashedHtmlPath = path.join(dir, `${name}-${h}.html`);
       const liveHtmlPath = path.join(dir, `${name}.html`);
@@ -297,7 +299,9 @@ async function main() {
 <html>
 <head>
   <script type="module" src="${normalizedBaseUrl}/assets/${name}-${h}.js"></script>
-  <link rel="stylesheet" href="${normalizedBaseUrl}/assets/${name}-${h}.css">
+  <style>
+    ${css}
+  </style>
 </head>
 <body>
   <div id="${name}-root"></div>
