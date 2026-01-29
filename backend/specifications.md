@@ -2,7 +2,7 @@
 
 Questo documento descrive i passaggi necessari per sostituire i prodotti attuali nell'applicazione Pizzaz con i tuoi prodotti elettronici e per comprendere il deployment su ChatGPT.
 
-**Nota importante**: Questo file contiene solo le specifiche da implementare. Per bug trovati, bug risolti e verifiche dettagliate, consultare il file `bugs.md`.
+**Nota importante**: Questo file contiene solo le specifiche da implementare. Per bug trovati, bug risolti e verifiche dettagliate, consultare `frontend/bugs.md` e `backend/bugs.md`.
 
 ## Regole di processo per la gestione delle specifiche
 
@@ -12,13 +12,13 @@ Questo documento descrive i passaggi necessari per sostituire i prodotti attuali
 
 2. **Problemi di funzionamento**: Se un lavoro smette di funzionare o non funziona:
    - **NON** spuntare la casella (lasciare `[ ]`)
-   - Documentare il problema nel file `bugs.md` nella sezione "Bug trovati"
+   - Documentare il problema nel file `frontend/bugs.md` o `backend/bugs.md` nella sezione "Bug trovati"
 
-3. **Gestione bug**: Quando si trova un bug, documentarlo nel file `bugs.md` nella sezione "Bug trovati".
+3. **Gestione bug**: Quando si trova un bug, documentarlo nel file `frontend/bugs.md` o `backend/bugs.md` nella sezione "Bug trovati".
 
 5. **Verifica continua**: Le caselle spuntate devono rappresentare lo stato attuale funzionante. Se qualcosa si rompe, la casella va deselezionata e il problema documentato.
 
-**Nota**: Per bug trovati, bug risolti e verifiche da fare, consultare il file `bugs.md`.
+**Nota**: Per bug trovati, bug risolti e verifiche da fare, consultare `frontend/bugs.md` e `backend/bugs.md`.
 
 ## Indice
 
@@ -26,8 +26,6 @@ Questo documento descrive i passaggi necessari per sostituire i prodotti attuali
 - [1. Preparazione dell'ambiente](#1-preparazione-dellambiente)
 
 ### 2. Integrazione dei prodotti elettronici
-- [2.1 Sostituzione di `INITIAL_CART_ITEMS`](#21-sostituzione-di-initial_cart_items)
-- [2.2 Compatibilità dei tipi `CartItem`](#22-compatibilità-dei-tipi-cartitem)
 - [2.3 Migrazione dati da JSON a Database MotherDuck](#23-migrazione-dati-da-json-a-database-motherduck)
 
 ### 3. Build e esecuzione dell'applicazione
@@ -53,7 +51,6 @@ Questo documento descrive i passaggi necessari per sostituire i prodotti attuali
 - [6. Refactoring da Pizzaz a Electronics](#6-refactoring-da-pizzaz-a-electronics)
   - [6.1 Rinominare directory e file](#61-rinominare-directory-e-file)
   - [6.2 Refactoring codice Python (Server)](#62-refactoring-codice-python-server)
-  - [6.3 Refactoring codice TypeScript/JavaScript (Frontend)](#63-refactoring-codice-typescriptjavascript-frontend)
   - [6.4 Aggiornare file di configurazione](#64-aggiornare-file-di-configurazione)
   - [6.5 Verifica funzionalità dopo refactoring](#65-verifica-funzionalità-dopo-refactoring)
   - [6.6 Checklist refactoring](#66-checklist-refactoring)
@@ -64,13 +61,6 @@ Questo documento descrive i passaggi necessari per sostituire i prodotti attuali
   - [7.2 Linee guida e best practices](#72-linee-guida-e-best-practices)
   - [7.3 Problemi critici da risolvere](#73-problemi-critici-da-risolvere)
   - [7.4 Checklist finale pre-deployment](#74-checklist-finale-pre-deployment)
-
-### 8. Verifica conformità linee guida MCP Client e Widget
-- [8. Verifica conformità linee guida MCP Client e Widget](#8-verifica-conformità-linee-guida-mcp-client-e-widget)
-  - [8.1 Core Client Features (MCP)](#81-core-client-features-mcp)
-  - [8.2 OpenAI Apps SDK Widget Guidelines](#82-openai-apps-sdk-widget-guidelines)
-  - [8.3 Problemi critici da risolvere (Client/Widget)](#83-problemi-critici-da-risolvere-clientwidget)
-  - [8.4 Checklist finale pre-deployment (Client/Widget)](#84-checklist-finale-pre-deployment-clientwidget)
 
 ### 9. Distribuzione e interazione con ChatGPT
 - [9. Distribuzione e interazione con ChatGPT](#9-distribuzione-e-interazione-con-chatgpt)
@@ -87,68 +77,43 @@ Questo documento descrive i passaggi necessari per sostituire i prodotti attuali
   - [10.4 Note per l'implementazione](#104-note-per-limplementazione)
   - [10.5 Prompt completo (pronto all'uso)](#105-prompt-completo-pronto-alluso)
 
-### 11. Migliorie UI e UX
-- [11. Migliorie UI e UX](#11-migliorie-ui-e-ux)
-  - [11.1 Filtri dinamici per categoria nello shop](#111-filtri-dinamici-per-categoria-nello-shop)
-  - [11.2 Limite di prodotti visualizzati](#112-limite-di-prodotti-visualizzati)
-  - [11.3 Migliorie carosello prodotti](#113-migliorie-carosello-prodotti)
-  - [11.4 Pulizia warning TypeScript](#114-pulizia-warning-typescript)
-
 ---
 
 ## 1. Preparazione dell'ambiente
 
-- [x]  **Comprendere la struttura del progetto**: Familiarizza con i file principali, in particolare `py/new_initial_cart_items.ts` (i tuoi prodotti), `src/pizzaz-shop/index.tsx` (il widget del negozio che usa i prodotti, da rinominare in `src/electronics-shop/index.tsx` dopo refactoring Sezione 6), `src/shopping-cart/index.tsx` (il widget del carrello), `electronics_server_python/main.py` (il backend Python) e `package.json` (script di build).
+- [x]  **Comprendere la struttura del progetto**: Familiarizza con i file principali, in particolare `frontend/py/new_initial_cart_items.ts` (i tuoi prodotti), `frontend/src/pizzaz-shop/index.tsx` (il widget del negozio che usa i prodotti, da rinominare in `frontend/src/electronics-shop/index.tsx` dopo refactoring Sezione 6), `frontend/src/shopping-cart/index.tsx` (il widget del carrello), `backend/electronics_server_python/main.py` (il backend Python) e `frontend/package.json` (script di build).
   - Nota: I path con "pizzaz" sono ancora corretti perché il refactoring (Sezione 6) non è stato completato
   - **Dettagli struttura progetto**:
-    - **File prodotti**: `py/new_initial_cart_items.ts` contiene array di prodotti elettronici con tipo `CartItem[]`
-    - **Widget negozio**: `src/pizzaz-shop/index.tsx` importa prodotti e gestisce UI del negozio
-    - **Widget carrello**: `src/shopping-cart/index.tsx` gestisce il carrello acquisti
-    - **Server Python**: `electronics_server_python/main.py` espone tool MCP per i widget e per il flusso checkout/Stripe (PaymentIntent + sessioni checkout MCP).
-    - **Build system**: `build-all.mts` genera bundle per tutti i widget (pizzaz, pizzaz-shop, pizzaz-carousel, pizzaz-list, pizzaz-albums, etc.)
-    - **Package manager**: `package.json` versione 5.0.16, usa pnpm 10.24.0
+    - **File prodotti**: `frontend/py/new_initial_cart_items.ts` contiene array di prodotti elettronici con tipo `CartItem[]`
+    - **Widget negozio**: `frontend/src/pizzaz-shop/index.tsx` importa prodotti e gestisce UI del negozio
+    - **Widget carrello**: `frontend/src/shopping-cart/index.tsx` gestisce il carrello acquisti
+    - **Server Python**: `backend/electronics_server_python/main.py` espone tool MCP per i widget e per il flusso checkout/Stripe (PaymentIntent + sessioni checkout MCP).
+    - **Build system**: `frontend/build-all.mts` genera bundle per tutti i widget (pizzaz, pizzaz-shop, pizzaz-carousel, pizzaz-list, pizzaz-albums, etc.)
+    - **Package manager**: `frontend/package.json` versione 5.0.16, usa pnpm 10.24.0
 
 ## 2. Integrazione dei prodotti elettronici
 
-### 2.1 Sostituzione di `INITIAL_CART_ITEMS`
-- [x]  **Importare i nuovi prodotti**: Modifica `src/pizzaz-shop/index.tsx` per importare `INITIAL_CART_ITEMS` da `py/new_initial_cart_items.ts` invece di usare la definizione locale.
-- [x]  **Rimuovere i prodotti vecchi**: Elimina la definizione locale di `INITIAL_CART_ITEMS` in `src/pizzaz-shop/index.tsx`.
-
-### 2.2 Compatibilità dei tipi `CartItem`
-- [x]  **Verificare la compatibilità**: Assicurati che il tipo `CartItem` definito in `py/new_initial_cart_items.ts` sia compatibile con quello usato in `src/pizzaz-shop/index.tsx` e `src/shopping-cart/index.tsx`. Potrebbe essere necessario consolidare le definizioni o adattarle.
-  - **Nota**: Per dettagli su bug trovati e risolti, vedere `bugs.md` sezione "Bug risolti - 2.2 Compatibilità dei tipi `CartItem`"
-
 ### 2.3 Migrazione dati da JSON a Database MotherDuck
-- [x] **ALTA PRIORITÀ - Migrazione dati da `markers.json` a database**: I dati dei widget UI (carousel, list, map, albums, shop) attualmente vengono presi da `src/electronics/markers.json`. Questa modifica richiede di migrare tutti i widget per leggere i dati dal database MotherDuck invece che dal file JSON.
+- [x] **ALTA PRIORITÀ - Migrazione dati da `markers.json` a database**: I dati dei widget UI (carousel, list, map, albums, shop) attualmente vengono presi da `frontend/src/electronics/markers.json`. Questa modifica richiede di migrare tutti i widget per leggere i dati dal database MotherDuck invece che dal file JSON.
   - **Stato attuale**: ✅ **COMPLETATO** [2026-01-09] Tutti i widget ora leggono **esclusivamente** i dati da `toolOutput` (popolato dal server Python). Il fallback a JSON è stato rimosso come richiesto. Gli asset sono stati rigenerati con la build.
   - **Obiettivo**: ✅ **RAGGIUNTO** I dati vengono presi **solo** dal database MotherDuck (tabella `prodotti_xeel_shop` nello schema `main` del database `app_gpt_elettronica`) quando i tool vengono chiamati.
   - **Soluzione implementata**:
-    1. ✅ **Funzione di trasformazione prodotti->places** (`electronics_server_python/main.py`):
+    1. ✅ **Funzione di trasformazione prodotti->places** (`backend/electronics_server_python/main.py`):
        - Creata funzione `transform_products_to_places()` che converte prodotti dal database in formato "places"
       - Mappa i campi: `id`, `name`, `price` (numero → stringa in euro, es. `34,59€`), `description`, `image` → `thumbnail`
        - Genera valori default per campi mancanti:
          - `coords`: Coordinate di default per San Francisco (distribuite in diverse zone)
          - `city`: Nome città di default basato su pattern circolare
          - `rating`: Rating di default 4.5 (può essere calcolato in futuro se disponibile)
-    2. ✅ **Funzione di trasformazione prodotti->albums** (`electronics_server_python/main.py`):
+    2. ✅ **Funzione di trasformazione prodotti->albums** (`backend/electronics_server_python/main.py`):
        - Creata funzione `transform_products_to_albums()` che raggruppa prodotti per categoria/tag
        - Crea album tematici basati sui tag dei prodotti
        - Ogni prodotto diventa una "photo" nell'album corrispondente
-    3. ✅ **Server Python aggiornato** (`electronics_server_python/main.py`):
+    3. ✅ **Server Python aggiornato** (`backend/electronics_server_python/main.py`):
        - Modificato `_call_tool_request` per recuperare prodotti da MotherDuck quando necessario
        - Per `electronics-carousel`, `electronics-map`, `electronics-list`, `mixed-auth-search`: trasforma prodotti in `places` e passa in `structuredContent`
        - Per `electronics-albums`: trasforma prodotti in `albums` e passa in `structuredContent`
        - Per `product-list`: passa direttamente i prodotti in `structuredContent`
-    4. ✅ **Widget aggiornati per leggere solo da toolOutput** [2026-01-09]:
-       - `src/electronics-carousel/index.jsx`: Legge **solo** da `toolOutput?.places || []` (fallback JSON rimosso)
-       - `src/electronics/index.jsx` (map): Legge **solo** da `toolOutput?.places || []` (fallback JSON rimosso)
-       - `src/electronics-list/index.jsx`: Legge **solo** da `toolOutput?.places || []` (fallback JSON rimosso)
-       - `src/mixed-auth-search/index.jsx`: Legge **solo** da `toolOutput?.places || []` (fallback JSON rimosso)
-       - `src/electronics-albums/index.jsx`: Legge **solo** da `toolOutput?.albums || []` (fallback JSON rimosso)
-    5. ✅ **Asset rigenerati** [2026-01-09]:
-       - Eseguita `pnpm run build` per rigenerare tutti gli asset HTML/JS/CSS con il codice aggiornato
-       - Tutti i widget ora utilizzano esclusivamente i dati da MotherDuck tramite `toolOutput`
-       - Hash asset: `2d2b` (generato il 2026-01-09)
   - **Vantaggi della soluzione**:
     - ✅ Dati dinamici sincronizzati con il database
     - ✅ Funzionamento esclusivo da database: i widget dipendono solo da MotherDuck
@@ -171,7 +136,6 @@ Questo documento descrive i passaggi necessari per sostituire i prodotti attuali
 
 ## 3. Build e esecuzione dell'applicazione
 
-- [x]  **Eseguire la build del frontend**: Utilizza i comandi di `pnpm` o `npm` per compilare il frontend, come specificato in `package.json` (es. `pnpm run build`). Questo genererà i file HTML e JavaScript necessari per i widget.
 - [x]  **Avviare il server Python**: Esegui il backend Python che serve i widget.
   - **IMPORTANTE - Integrazione MotherDuck**: Il server DEVE essere configurato con MotherDuck per funzionare correttamente. Il server usa l'MCP server di MotherDuck e richiede la variabile d'ambiente `motherduck_token` per:
     - Connettere al database MotherDuck (`md:app_gpt_elettronica`)
@@ -211,7 +175,7 @@ Questa sezione verifica che il progetto rispetti i principi architetturali MCP s
 
 #### 4.0.3 Strict Security Boundaries
 - [x] **Accesso limitato al contesto**: Il server accede solo ai dati necessari
-  - **Nota**: Per verifiche sui permessi MotherDuck, vedere `bugs.md` sezione "Verifiche da fare - Architettura MCP"
+  - **Nota**: Per verifiche sui permessi MotherDuck, vedere `backend/bugs.md` sezione "Verifiche da fare - Architettura MCP"
   - **Integrazione MotherDuck**: Il server DEVE avere `motherduck_token` configurato per funzionare. Il server attualmente usa DuckDB per connettersi direttamente a MotherDuck (`md:app_gpt_elettronica`) e recupera prodotti dalla tabella `prodotti_xeel_shop` nello schema `main`. Senza il token, `get_motherduck_connection()` solleverà un `ValueError`.
   - **PROBLEMA IDENTIFICATO - Integrazione MCP Server**: [2026-01-08] Il server usa DuckDB direttamente (riga 47-65) invece di integrarsi con l'MCP server di MotherDuck. Secondo il repository di riferimento `mcp-motherduck-medicair`, il server dovrebbe comporsi con l'MCP server di MotherDuck o usare il tool `query` dell'MCP server invece di DuckDB diretto.
     - **Stato attuale**: `get_motherduck_connection()` usa `duckdb.connect(f"md:app_gpt_elettronica?motherduck_token={md_token}")` direttamente
@@ -294,7 +258,7 @@ Questa sezione verifica che il progetto rispetti le linee guida di versionamento
 
 #### 5.1.2 Backward Compatibility
 - [x] **Mantenimento compatibilità**: Verificare che modifiche future mantengano backward compatibility
-  - **Completato**: [2026-01-08] Documentata policy di backward compatibility nel README del server (`electronics_server_python/README.md`). La policy include:
+  - **Completato**: [2026-01-08] Documentata policy di backward compatibility nel README del server (`backend/electronics_server_python/README.md`). La policy include:
     1. Tool Stability: I tool esistenti non verranno rimossi
     2. Schema Compatibility: Gli schemi input/output non verranno modificati in modo breaking
     3. Resource Stability: Le risorse esistenti rimarranno disponibili
@@ -336,7 +300,7 @@ Questa sezione verifica che il progetto rispetti le linee guida di versionamento
 
 #### 5.2.1 Versioning del server
 - [x] **Versione del server**: Definire strategia di versionamento per il server applicazione
-  - **Completato**: [2026-01-08] Implementato versionamento semantico (Semantic Versioning) nel server. Aggiunto `__version__ = "1.0.0"` in `electronics_server_python/main.py` (riga 11). Strategia definita:
+  - **Completato**: [2026-01-08] Implementato versionamento semantico (Semantic Versioning) nel server. Aggiunto `__version__ = "1.0.0"` in `backend/electronics_server_python/main.py` (riga 11). Strategia definita:
     - **MAJOR** (X.0.0): Breaking changes che richiedono aggiornamenti client
     - **MINOR** (0.X.0): Nuove funzionalità, nuovi tool, nuove risorse (backward compatible)
     - **PATCH** (0.0.X): Bug fixes e miglioramenti minori (backward compatible)
@@ -359,7 +323,7 @@ Questa sezione verifica che il progetto rispetti le linee guida di versionamento
 
 #### 5.2.2 Compatibilità con versioni MCP
 - [x] **Documentazione versioni supportate**: Documentare quali versioni MCP sono supportate
-  - **Completato**: [2026-01-08] Documentato nel README del server (`electronics_server_python/README.md`):
+  - **Completato**: [2026-01-08] Documentato nel README del server (`backend/electronics_server_python/README.md`):
     - **MCP Protocol Version**: 2024-11-05 (Current - versione stabile)
     - **Server Version**: 1.0.0 (Semantic Versioning)
     - FastMCP gestisce automaticamente la version negotiation
@@ -378,7 +342,7 @@ Questa sezione verifica che il progetto rispetti le linee guida di versionamento
 - [x] Version negotiation implementata e testata
 - [x] Error handling per negotiation fallita implementato
 - [x] Strategia di versionamento del server definita
-  - **Completato**: [2026-01-08] Implementato versionamento semantico (Semantic Versioning) con `__version__ = "1.0.0"` in `electronics_server_python/main.py`. Strategia documentata nel README.
+  - **Completato**: [2026-01-08] Implementato versionamento semantico (Semantic Versioning) con `__version__ = "1.0.0"` in `backend/electronics_server_python/main.py`. Strategia documentata nel README.
 - [x] Changelog creato e mantenuto
   - **Completato**: [2026-01-08] Creato `CHANGELOG.md` nella root del progetto seguendo il formato Keep a Changelog. Documentata versione iniziale 1.0.0.
 - [x] Documentazione versioni supportate aggiornata
@@ -393,64 +357,64 @@ Questa sezione documenta il refactoring completo necessario per trasformare il p
 ### 6.1 Rinominare directory e file
 
 #### 6.1.1 Directory server
-- [x] **Rinominare `pizzaz_server_python/` → `electronics_server_python/`**
+- [x] **Rinominare `pizzaz_server_python/` → `backend/electronics_server_python/`**
   - **Completato**: [2026-01-08] Directory rinominata con successo
   - File rinominati:
-    - `pizzaz_server_python/main.py` → `electronics_server_python/main.py` (REFACTORING CODICE COMPLETATO: [2026-01-08] Tutti i riferimenti a Pizzaz/Pizza sono stati rinominati a Electronics nel codice)
-    - `pizzaz_server_python/README.md` → `electronics_server_python/README.md`
-    - `pizzaz_server_python/requirements.txt` → `electronics_server_python/requirements.txt`
+    - `pizzaz_server_python/main.py` → `backend/electronics_server_python/main.py` (REFACTORING CODICE COMPLETATO: [2026-01-08] Tutti i riferimenti a Pizzaz/Pizza sono stati rinominati a Electronics nel codice)
+    - `pizzaz_server_python/README.md` → `backend/electronics_server_python/README.md`
+    - `pizzaz_server_python/requirements.txt` → `backend/electronics_server_python/requirements.txt`
   - Aggiornare riferimenti in:
     - `specifications.md` (in corso)
     - `README.md`
-    - `build-all.mts` (COMPLETATO: [2026-01-08] Aggiornato a electronics-*)
+    - `frontend/build-all.mts` (COMPLETATO: [2026-01-08] Aggiornato a electronics-*)
     - File di configurazione Render/deployment (da aggiornare)
 
 #### 6.1.2 Directory widget frontend
-- [x] **Rinominare `src/pizzaz/` → `src/electronics/`**
+- [x] **Rinominare `frontend/src/pizzaz/` → `frontend/src/electronics/`**
   - **Completato**: [2026-01-08] Directory rinominata con successo
   - File da rinominare:
-    - `src/pizzaz/index.jsx` → `src/electronics/index.jsx`
-    - `src/pizzaz/Inspector.jsx` → `src/electronics/Inspector.jsx`
-    - `src/pizzaz/Sidebar.jsx` → `src/electronics/Sidebar.jsx`
-    - `src/pizzaz/map.css` → `src/electronics/map.css`
-    - `src/pizzaz/markers.json` → `src/electronics/markers.json`
+    - `frontend/src/pizzaz/index.jsx` → `frontend/src/electronics/index.jsx`
+    - `frontend/src/pizzaz/Inspector.jsx` → `frontend/src/electronics/Inspector.jsx`
+    - `frontend/src/pizzaz/Sidebar.jsx` → `frontend/src/electronics/Sidebar.jsx`
+    - `frontend/src/pizzaz/map.css` → `frontend/src/electronics/map.css`
+    - `frontend/src/pizzaz/markers.json` → `frontend/src/electronics/markers.json`
   
-- [x] **Rinominare `src/pizzaz-shop/` → `src/electronics-shop/`**
+- [x] **Rinominare `frontend/src/pizzaz-shop/` → `frontend/src/electronics-shop/`**
   - **Completato**: [2026-01-08] Directory rinominata con successo
   - File da rinominare:
-    - `src/pizzaz-shop/index.tsx` → `src/electronics-shop/index.tsx`
+    - `frontend/src/pizzaz-shop/index.tsx` → `frontend/src/electronics-shop/index.tsx`
   
-- [x] **Rinominare `src/pizzaz-carousel/` → `src/electronics-carousel/`**
+- [x] **Rinominare `frontend/src/pizzaz-carousel/` → `frontend/src/electronics-carousel/`**
   - **Completato**: [2026-01-08] Directory rinominata con successo
   - File da rinominare:
-    - `src/pizzaz-carousel/index.jsx` → `src/electronics-carousel/index.jsx`
-    - `src/pizzaz-carousel/PlaceCard.jsx` → `src/electronics-carousel/PlaceCard.jsx`
+    - `frontend/src/pizzaz-carousel/index.jsx` → `frontend/src/electronics-carousel/index.jsx`
+    - `frontend/src/pizzaz-carousel/PlaceCard.jsx` → `frontend/src/electronics-carousel/PlaceCard.jsx`
   
-- [x] **Rinominare `src/pizzaz-albums/` → `src/electronics-albums/`**
+- [x] **Rinominare `frontend/src/pizzaz-albums/` → `frontend/src/electronics-albums/`**
   - **Completato**: [2026-01-08] Directory rinominata con successo
   - File da rinominare:
-    - `src/pizzaz-albums/index.jsx` → `src/electronics-albums/index.jsx`
-    - `src/pizzaz-albums/AlbumCard.jsx` → `src/electronics-albums/AlbumCard.jsx`
-    - `src/pizzaz-albums/FilmStrip.jsx` → `src/electronics-albums/FilmStrip.jsx`
-    - `src/pizzaz-albums/FullscreenViewer.jsx` → `src/electronics-albums/FullscreenViewer.jsx`
-    - `src/pizzaz-albums/albums.json` → `src/electronics-albums/products.json` (o nome appropriato)
+    - `frontend/src/pizzaz-albums/index.jsx` → `frontend/src/electronics-albums/index.jsx`
+    - `frontend/src/pizzaz-albums/AlbumCard.jsx` → `frontend/src/electronics-albums/AlbumCard.jsx`
+    - `frontend/src/pizzaz-albums/FilmStrip.jsx` → `frontend/src/electronics-albums/FilmStrip.jsx`
+    - `frontend/src/pizzaz-albums/FullscreenViewer.jsx` → `frontend/src/electronics-albums/FullscreenViewer.jsx`
+    - `frontend/src/pizzaz-albums/albums.json` → `frontend/src/electronics-albums/products.json` (o nome appropriato)
   
-- [x] **Rinominare `src/pizzaz-list/` → `src/electronics-list/`**
+- [x] **Rinominare `frontend/src/pizzaz-list/` → `frontend/src/electronics-list/`**
   - **Completato**: [2026-01-08] Directory rinominata con successo
   - File da rinominare:
-    - `src/pizzaz-list/index.jsx` → `src/electronics-list/index.jsx`
+    - `frontend/src/pizzaz-list/index.jsx` → `frontend/src/electronics-list/index.jsx`
 
 ### 6.2 Refactoring codice Python (Server)
 
 #### 6.2.1 Classi e tipi
 - [x] **Rinominare `PizzazWidget` → `ElectronicsWidget`**
   - **Completato**: [2026-01-08] Rinominato in `pizzaz_server_python/main.py` (riga 35)
-  - File: `electronics_server_python/main.py`
+  - File: `backend/electronics_server_python/main.py`
   - Aggiornare tutte le occorrenze della classe
   
 - [x] **Rinominare `PizzaInput` → `ElectronicsInput`** (o rimuovere se non più necessario)
   - **Completato**: [2026-01-08] Rimosso `PizzaInput` da `pizzaz_server_python/main.py` perché la maggior parte dei widget non richiede input. Se necessario in futuro, creare `ElectronicsInput` con campi appropriati.
-  - File: `electronics_server_python/main.py`
+  - File: `backend/electronics_server_python/main.py`
   - Verificare se è ancora necessario o se può essere sostituito con input più generici
 
 #### 6.2.2 Identificatori widget
@@ -500,75 +464,34 @@ Questa sezione documenta il refactoring completo necessario per trasformare il p
 - [x] **Rinominare server MCP**:
   - **Completato**: [2026-01-08] Rinominato `pizzaz-python` → `electronics-python` in `pizzaz_server_python/main.py` (riga 183)
   - `name="pizzaz-python"` → `name="electronics-python"` (o nome appropriato)
-  - File: `electronics_server_python/main.py` (riga 183)
+  - File: `backend/electronics_server_python/main.py` (riga 183)
 
 #### 6.2.7 Schema input tool
 - [x] **Rinominare/rimuovere `TOOL_INPUT_SCHEMA` con `pizzaTopping`**:
   - **Completato**: [2026-01-08] Rimosso `TOOL_INPUT_SCHEMA` con `pizzaTopping` e sostituito con `EMPTY_TOOL_INPUT_SCHEMA` in `pizzaz_server_python/main.py` (riga 189-199). La maggior parte dei widget non richiede input.
-  - File: `electronics_server_python/main.py`
+  - File: `backend/electronics_server_python/main.py`
   - Se non più necessario, rimuovere o sostituire con schema appropriato per prodotti elettronici
   - Verificare se tutti i tool hanno schemi appropriati
 
 #### 6.2.8 Commenti e documentazione
 - [x] **Aggiornare docstring e commenti**:
-  - **Completato**: [2026-01-08] Aggiornate docstring e commenti in `electronics_server_python/main.py`:
+  - **Completato**: [2026-01-08] Aggiornate docstring e commenti in `backend/electronics_server_python/main.py`:
     - Docstring principale aggiornata da "Pizzaz" a "Electronics" (riga 1-11)
     - Commenti aggiornati per riferirsi a prodotti elettronici invece di pizza
     - Funzioni documentate con descrizioni appropriate per prodotti elettronici
-  - File: `electronics_server_python/main.py`
+  - File: `backend/electronics_server_python/main.py`
   - Sostituire riferimenti a "Pizzaz", "pizza", "topping" con terminologia appropriata
   - Aggiornare `README.md` del server
-
-### 6.3 Refactoring codice TypeScript/JavaScript (Frontend)
-
-#### 6.3.1 Tipi e interfacce
-- [x] **Rinominare `PizzazCartWidgetState` → `ElectronicsCartWidgetState`**
-  - **Completato**: [2026-01-08] Rinominato in `src/electronics-shop/index.tsx` (riga 26-30, 65, 365, 528)
-  - File: `src/electronics-shop/index.tsx`
-  
-- [x] **Rinominare `PizzazCartWidgetProps` → `ElectronicsCartWidgetProps`**
-  - **Completato**: [2026-01-08] Rinominato in `src/electronics-shop/index.tsx` (riga 32-35, 364)
-  - File: `src/electronics-shop/index.tsx`
-
-#### 6.3.2 Variabili e costanti
-- [ ] **Aggiornare nomi variabili con riferimenti a "pizza"**:
-  - Cercare e sostituire tutte le occorrenze di variabili con "pizza" nel nome
-  - File: `src/electronics-shop/index.tsx` e altri file widget
-
-#### 6.3.3 Commenti e stringhe
-- [x] **Aggiornare commenti e stringhe**:
-  - **Completato**: [2026-01-08] Aggiornati tutti i commenti e stringhe con riferimenti a "pizza"/"pizzaz":
-    - Commento in `src/mixed-auth-search/index.jsx` (riga 10): Aggiornato da "originally for pizza search" a "for electronics search"
-    - Verificare che non ci siano altri riferimenti residui a "pizza" o "pizzaz" nei file frontend
-  - Sostituire riferimenti a "pizza", "pizzaz" in commenti
-  - Aggiornare messaggi utente se presenti
-
-#### 6.3.4 File JSON di dati
-- [x] **Aggiornare `albums.json` → `products.json`** (o nome appropriato):
-  - **Valutato**: [2026-01-08] Il file `albums.json` contiene dati per il widget `electronics-albums` che mostra una galleria di prodotti. Il nome `albums.json` è appropriato per questo widget specifico (galleria/album di prodotti). Non è necessario rinominarlo perché:
-    - È usato solo dal widget `electronics-albums`
-    - Il nome "albums" descrive correttamente il formato (galleria di immagini)
-    - Rinominarlo potrebbe confondere se il widget mantiene il concetto di "album/galleria"
-  - **Nota**: Se in futuro si volesse un nome più generico, si potrebbe considerare `products-gallery.json`, ma per ora `albums.json` è accettabile.
-  - File: `src/electronics-albums/albums.json`
-  - Sostituire dati di esempio pizza con dati prodotti elettronici (se necessario)
-  - Rinominare chiavi come "pizza-tour" → "electronics-tour" o simili
-
-- [x] **Aggiornare `markers.json`**:
-  - **Valutato**: [2026-01-08] Il file `markers.json` contiene dati per la mappa (markers/posizioni). Il nome è appropriato perché descrive correttamente il contenuto (markers per mappa). Il contenuto dovrebbe essere aggiornato per riflettere negozi di elettronica invece di pizzerie, ma il nome del file è corretto.
-  - **Azioni richieste**: Aggiornare il contenuto di `markers.json` per includere posizioni di negozi di elettronica invece di pizzerie (se necessario per il caso d'uso).
-  - File: `src/electronics/markers.json`
-  - Sostituire marker pizza con marker negozi elettronici (se necessario)
 
 ### 6.4 Aggiornare file di configurazione
 
 #### 6.4.1 Build e deployment
-- [x] **Aggiornare `build-all.mts`**:
-  - **Completato**: [2026-01-08] Aggiornato `build-all.mts` con i nuovi nomi `electronics-*` invece di `pizzaz-*` (riga 20-24)
+- [x] **Aggiornare `frontend/build-all.mts`**:
+  - **Completato**: [2026-01-08] Aggiornato `frontend/build-all.mts` con i nuovi nomi `electronics-*` invece di `pizzaz-*` (riga 20-24)
   - Aggiornare riferimenti a directory rinominati
   - Verificare che i path siano corretti
 
-- [x] **Aggiornare `package.json`**:
+- [x] **Aggiornare `frontend/package.json`**:
   - Verificare se ci sono script che referenziano "pizzaz"
   - Aggiornare se necessario
 
@@ -637,17 +560,17 @@ Questa sezione verifica che il progetto rispetti tutte le linee guida MCP Server
 ### 7.1 Requisiti MCP Server
 
 #### 7.1.1 Tool Definition
-- [x] **Nomi tool chiari e descrittivi**: Verificare che i nomi dei tool in `pizzaz_server_python/main.py` (da rinominare in `electronics_server_python/main.py` dopo refactoring Sezione 6) siano human-readable e specifici
+- [x] **Nomi tool chiari e descrittivi**: Verificare che i nomi dei tool in `pizzaz_server_python/main.py` (da rinominare in `backend/electronics_server_python/main.py` dopo refactoring Sezione 6) siano human-readable e specifici
   - Nota: Il path `pizzaz_server_python` è ancora corretto perché il refactoring (Sezione 6) non è stato completato. Questo riferimento sarà aggiornato quando il refactoring sarà completato.
 - [x] **JSON Schema input/output**: Verificare che tutti i tool abbiano schemi JSON Schema ben definiti
   - **Completato**: [2026-01-08] Tutti i tool hanno schemi JSON Schema corretti. Lo schema `EMPTY_TOOL_INPUT_SCHEMA` è usato per tutti i tool perché la maggior parte non richiede parametri di input. Questo è corretto perché:
     - `electronics-map`, `electronics-carousel`, `electronics-albums`, `electronics-list`, `electronics-shop`: Widget di visualizzazione che non richiedono input
     - `product-list`: Recupera prodotti da MotherDuck senza parametri (recupera tutti i prodotti)
-  - **Implementazione**: Lo schema vuoto (`EMPTY_TOOL_INPUT_SCHEMA`) è definito in `electronics_server_python/main.py` (riga 220-227) e viene usato per tutti i tool (riga 259). Se in futuro alcuni tool richiederanno input, si possono creare schemi specifici per tool.
+  - **Implementazione**: Lo schema vuoto (`EMPTY_TOOL_INPUT_SCHEMA`) è definito in `backend/electronics_server_python/main.py` (riga 220-227) e viene usato per tutti i tool (riga 259). Se in futuro alcuni tool richiederanno input, si possono creare schemi specifici per tool.
 - [x] **Annotazioni tool**: Verificare che le annotazioni (`readOnlyHint`, `openWorldHint`, `destructiveHint`) siano corrette
   - Stato attuale: Le annotazioni sono presenti in `_list_tools()` con `readOnlyHint: True`, `destructiveHint: False`, `openWorldHint: False`
 - [x] **Descrizioni tool**: Verificare che ogni tool abbia una descrizione chiara e utile
-  - **Completato**: [2026-01-08] Tutti i tool hanno descrizioni dettagliate che spiegano cosa fanno, quando usarli e cosa restituiscono. Implementata funzione `_tool_description()` in `electronics_server_python/main.py` (riga 234-264) che fornisce descrizioni specifiche per ogni tool:
+  - **Completato**: [2026-01-08] Tutti i tool hanno descrizioni dettagliate che spiegano cosa fanno, quando usarli e cosa restituiscono. Implementata funzione `_tool_description()` in `backend/electronics_server_python/main.py` (riga 234-264) che fornisce descrizioni specifiche per ogni tool:
     - `electronics-map`: Descrizione dettagliata per mappa interattiva
     - `electronics-carousel`: Descrizione per carosello prodotti
     - `electronics-albums`: Descrizione per galleria prodotti
@@ -677,7 +600,7 @@ Questa sezione verifica che il progetto rispetti tutte le linee guida MCP Server
     - Activity logs sono implementati per trasparenza
   - **Documentato**: Nel README del server nella sezione "Security and Privacy" > "User Consent".
 - [x] **Activity Logs per Tools**: Considerare implementazione di log per tutte le esecuzioni tool
-  - **Completato**: [2026-01-08] Implementato logging completo per tutte le esecuzioni tool in `electronics_server_python/main.py`. Il logging include:
+  - **Completato**: [2026-01-08] Implementato logging completo per tutte le esecuzioni tool in `backend/electronics_server_python/main.py`. Il logging include:
     - Log inizio esecuzione con tool name e arguments keys (senza dati sensibili)
     - Log successo/errore con durata dell'esecuzione
     - Log dettagliato per operazioni MotherDuck (connessione, query, risultati)
@@ -732,7 +655,7 @@ Questa sezione verifica che il progetto rispetti tutte le linee guida MCP Server
 - [x] **Dominio pubblico**: Verificare che il server sia accessibile pubblicamente (non localhost)
   - **Completato**: [2026-01-08] Il server è configurato per deployment su Render con dominio pubblico `sdk-electronics.onrender.com`. La configurazione è documentata nella sezione 9.1 delle specifiche. Per sviluppo locale, si può usare ngrok o altri tunnel tools come documentato nel README principale.
 - [x] **Content Security Policy (CSP)**: **CRITICO** - Implementare CSP header per sicurezza
-  - **Completato**: [2026-01-08] Implementato middleware CSP (`CSPMiddleware`) in `electronics_server_python/main.py` (riga 207-240). Il middleware aggiunge header CSP a tutte le risposte HTTP con policy che:
+  - **Completato**: [2026-01-08] Implementato middleware CSP (`CSPMiddleware`) in `backend/electronics_server_python/main.py` (riga 207-240). Il middleware aggiunge header CSP a tutte le risposte HTTP con policy che:
     - Permette script e style da 'self' con 'unsafe-inline'/'unsafe-eval' (necessari per widget React e Tailwind CSS)
     - Permette immagini da 'self', data URIs, e HTTPS
     - Permette connessioni a 'self' e https://chat.openai.com
@@ -750,7 +673,7 @@ Questa sezione verifica che il progetto rispetti tutte le linee guida MCP Server
 
 #### 7.2.1 Security and Privacy
 - [x] **Least Privilege**: Verificare che il server richieda solo i permessi necessari
-  - **Completato**: [2026-01-08] Documentato nel README del server (`electronics_server_python/README.md`). Il server segue il principio di least privilege:
+  - **Completato**: [2026-01-08] Documentato nel README del server (`backend/electronics_server_python/README.md`). Il server segue il principio di least privilege:
     - Accesso database: Solo lettura dalla tabella `prodotti_xeel_shop` (SELECT queries)
     - File system: Solo lettura da `assets/` directory (read-only)
     - Network: Solo connessione a MotherDuck (necessaria per dati prodotti)
@@ -765,7 +688,7 @@ Questa sezione verifica che il progetto rispetti tutte le linee guida MCP Server
     - Logging di argomenti inattesi per debugging
   - **Nota**: La maggior parte dei tool non richiede input (usano `EMPTY_TOOL_INPUT_SCHEMA`), quindi la validazione verifica principalmente che non vengano passati argomenti non previsti. Se in futuro alcuni tool richiederanno input, si può aggiungere validazione Pydantic specifica.
 - [x] **Audit Logs**: Considerare implementazione di log per audit
-  - **Completato**: [2026-01-08] Implementato logging completo per audit in `electronics_server_python/main.py`. I log includono:
+  - **Completato**: [2026-01-08] Implementato logging completo per audit in `backend/electronics_server_python/main.py`. I log includono:
     - Timestamp di ogni esecuzione tool
     - Tool name e arguments keys (senza dati sensibili)
     - Successo/errore e durata esecuzione
@@ -832,7 +755,7 @@ Questa sezione verifica che il progetto rispetti tutte le linee guida MCP Server
 ### 7.3 Problemi critici da risolvere
 
 1. **Content Security Policy (CSP)**: **RISOLTO** ✅
-   - **Completato**: [2026-01-08] Implementato middleware CSP (`CSPMiddleware`) in `electronics_server_python/main.py` (riga 207-240). Il middleware aggiunge header CSP a tutte le risposte HTTP con policy che permette solo i domini necessari (`chat.openai.com`, dominio del server).
+   - **Completato**: [2026-01-08] Implementato middleware CSP (`CSPMiddleware`) in `backend/electronics_server_python/main.py` (riga 207-240). Il middleware aggiunge header CSP a tutte le risposte HTTP con policy che permette solo i domini necessari (`chat.openai.com`, dominio del server).
 
 2. **Prompts non implementati**: **VALUTATO** - Non necessario per il caso d'uso attuale
    - **Valutato**: [2026-01-08] I Prompts non sono necessari perché i tool esistenti coprono tutte le funzionalità. I tool sono più flessibili e permettono a ChatGPT di orchestrarli in modo dinamico. I Prompts potrebbero essere aggiunti in futuro se si volessero workflow strutturati molto specifici, ma per ora non sono prioritari.
@@ -869,198 +792,6 @@ Questa sezione verifica che il progetto rispetti tutte le linee guida MCP Server
 - [ ] Monitoring e alerting configurati (se applicabile) - **OPZIONALE**: Può essere configurato su Render o altri servizi di monitoring
 - [x] Multi-server composability verificata (se applicabile) - **VERIFICATO**: Il server è progettato per composizione a livello di host (ChatGPT)
 
-## 8. Verifica conformità linee guida MCP Client e Widget
-
-Questa sezione verifica che il client/widget rispetti tutte le linee guida MCP Client secondo la documentazione: https://modelcontextprotocol.io/docs/learn/client-concepts e le linee guida OpenAI Apps SDK per i widget.
-
-### 8.1 Core Client Features (MCP)
-
-#### 8.1.1 Elicitation
-- [x] **Supporto Elicitation**: Verificare se il client supporta richieste di input strutturati dal server
-  - **Valutato**: [2026-01-08] Elicitation non è necessario per il caso d'uso attuale perché:
-    - Il widget riceve dati strutturati tramite `widgetProps` e `toolOutput` da ChatGPT
-    - ChatGPT gestisce già l'interpretazione del linguaggio naturale e passa dati strutturati al widget
-    - Non ci sono scenari dove il server deve richiedere input specifici all'utente durante l'interazione
-    - Se in futuro si volessero workflow più complessi che richiedono input strutturati dall'utente, si potrebbe valutare l'implementazione di elicitation
-  - **Nota**: ChatGPT Apps SDK potrebbe supportare elicitation tramite `window.openai`, ma non è documentato pubblicamente. Per ora, il flusso attuale è sufficiente.
-
-#### 8.1.2 Roots
-- [x] **Gestione Roots**: Verificare se il client gestisce filesystem boundaries
-
-#### 8.1.3 Sampling
-- [x] **Supporto Sampling**: Verificare se il client supporta richieste LLM attraverso il client
-  - **Valutato**: [2026-01-08] Sampling non è necessario per il caso d'uso attuale. Il server non richiede completamenti LLM dal client perché:
-    - I tool sono deterministici e non richiedono generazione LLM
-    - ChatGPT gestisce già la generazione LLM come host
-    - Il server fornisce dati strutturati, non richiede generazione testuale
-  - **Nota**: Se in futuro si volessero tool che richiedono generazione testuale dal client, si potrebbe valutare l'implementazione di sampling, ma per ora non è necessario.
-
-### 8.2 OpenAI Apps SDK Widget Guidelines
-
-#### 8.2.1 Design System e UI Components
-- [x] **Utilizzo Apps SDK UI Design System**: Il progetto usa `@openai/apps-sdk-ui` per componenti
-  - **Completato**: [2026-01-08] Implementato in `src/electronics-shop/index.tsx` con `Button`, `Image` da `@openai/apps-sdk-ui/components` (riga 22-23). La build completa con successo, quindi gli import sono corretti. I componenti sono utilizzati correttamente nel widget.
-- [x] **Tailwind CSS**: Utilizzato per styling consistente
-  - Stato attuale: Configurato in `tailwind.config.ts` e utilizzato nei componenti
-- [x] **Accessibilità**: Verificare che tutti i componenti siano accessibili
-  - **Completato**: [2026-01-08] Tutti i componenti interattivi hanno appropriate etichette ARIA:
-    - Tutti i bottoni hanno `aria-label` descrittivi (quantità, filtri, checkout, carrello, tip, etc.)
-    - Gli articoli cliccabili hanno `role="button"` e `aria-label` descrittivi
-    - Gli elementi iconici hanno `aria-hidden="true"` per evitare duplicazioni
-    - I bottoni di filtro hanno `aria-pressed` per indicare lo stato attivo
-    - Il bottone carrello ha `aria-haspopup="dialog"` e `aria-label` dinamico con conteggio articoli
-    - I bottoni disabilitati hanno `aria-disabled` appropriato
-  - File: `src/electronics-shop/index.tsx`
-
-#### 8.2.2 Display Modes
-- [x] **Supporto Display Modes**: Il widget supporta diversi display modes
-  - **Completato**: [2026-01-08] Implementato `useDisplayMode()` hook in `src/electronics-shop/index.tsx` (riga 367). Supporta: `inline`, `fullscreen`, `pip` (definiti in `src/types.ts`). Il widget usa display modes appropriati in base al contesto.
-- [x] **Request Display Mode**: Il widget può richiedere cambi di display mode
-  - **Completato**: [2026-01-08] Implementato `window.openai.requestDisplayMode()` in `src/electronics-shop/index.tsx` (riga 960-963). Il widget può richiedere cambi di display mode quando necessario (es. per checkout fullscreen).
-- [x] **Uso appropriato dei Display Modes**: Verificare che ogni widget usi il display mode più appropriato
-    - `inline`: Per visualizzazione normale nella conversazione
-    - `fullscreen`: Quando necessario per checkout o visualizzazione dettagliata
-    - `pip`: Supportato ma non usato attivamente (può essere richiesto dall'utente)
-  - **Implementazione**: Il widget usa `useDisplayMode()` hook e `requestDisplayMode()` per gestire i display modes dinamicamente in base al contesto (riga 362, 974 in `src/electronics-shop/index.tsx`).
-
-#### 8.2.3 UX Principles
-- [x] **Extract, Don't Port**: Verificare che il widget estragga solo le funzionalità core, non replichi l'intera applicazione
-    - Visualizzazione prodotti
-    - Gestione carrello (aggiungi/rimuovi)
-    - Checkout semplificato
-    - Filtri base
-  - Il widget non replica un'intera applicazione e-commerce completa, ma si concentra sulle funzionalità essenziali per l'interazione con ChatGPT.
-- [x] **Design for Conversational Entry**: Verificare che il widget gestisca prompt aperti e comandi diretti
-- [x] **Treat ChatGPT as "Home"**: Verificare che il widget usi l'UI selettivamente, non sostituisca ChatGPT
-    - Usa display modes appropriati (inline/fullscreen) solo quando necessario
-    - Non sostituisce ChatGPT come interfaccia principale
-    - Si integra nella conversazione come componente interattivo
-- [x] **Optimize for Conversation**: Verificare che il widget fornisca azioni chiare e risposte concise
-- [x] **Embrace the Ecosystem**: Verificare che il widget accetti input in linguaggio naturale e si componga con altri app
-
-#### 8.2.4 Widget State Management
-- [x] **Widget State**: Implementato gestione stato widget
-  - **Aggiornato**: [2026-01-20] `electronics-shop` usa `useWidgetState()` **solo** per `selectedCartItemId` e `state` (checkout). Il carrello è condiviso e gestito da `useCart()` (chiave `sharedCartItems`), non da `widgetState.cartItems`.
-- [x] **Widget Props**: Implementato gestione props dal tool output
-  - **Completato**: [2026-01-08] Implementato `useWidgetProps()` hook in `src/electronics-shop/index.tsx` (riga 369). Il widget riceve props da `toolOutput` e `widgetProps` che permettono a ChatGPT di passare dati strutturati al widget.
-- [x] **State Persistence**: Verificare che lo stato persista correttamente tra le interazioni
-  - **Implementazione**: `selectedCartItemId` e `state` persistono via `window.openai.widgetState`; il carrello persiste tramite `useCart()` e la chiave globale `sharedCartItems`.
-
-#### 8.2.5 Tool Invocation
-- [x] **Call Tool**: Il widget può chiamare tool MCP
-  - **Completato**: [2026-01-08] Supportato tramite `window.openai.callTool()` (vedi `kitchen-sink-lite/kitchen-sink-lite.tsx` per esempio). Il widget `electronics-shop` non chiama tool direttamente, il che è appropriato perché ChatGPT gestisce l'orchestrazione dei tool.
-- [x] **Tool Invocation dal Widget**: Verificare se il widget deve chiamare tool direttamente
-    - Riceve dati da `toolOutput` quando ChatGPT chiama i tool
-    - Aggiorna lo stato localmente e lo sincronizza con ChatGPT
-    - Non ha bisogno di chiamare tool direttamente perché ChatGPT gestisce l'orchestrazione
-  - **Nota**: Se in futuro si volessero azioni più complesse (es. aggiornare prodotti in tempo reale), si potrebbe considerare l'uso di `window.openai.callTool()`, ma per ora non è necessario.
-
-#### 8.2.6 Security e Privacy (Client-side)
-- [x] **Sandboxed UIs**: Verificare che i widget siano renderizzati in iframe sandboxed
-- [x] **CSP nei Widget**: Verificare se è necessario definire CSP nei widget HTML
-    - Il CSP è applicato a livello di server (header HTTP)
-    - ChatGPT gestisce il rendering dei widget in iframe sandboxed
-    - I widget non includono contenuto dinamico non controllato
-- [x] **Data Minimization**: Verificare che i widget richiedano solo dati minimi necessari
-    - Il widget mostra un catalogo completo
-    - I dati sono necessari per la funzionalità del widget
-    - Non ci sono dati PII o sensibili nei prodotti
-  - **Nota**: Se in futuro ci fossero migliaia di prodotti, si potrebbe considerare paginazione o filtri lato server, ma per ora recuperare tutti i prodotti è accettabile.
-- [ ] **Privacy Policy**: Verificare se è necessario includere privacy policy nel widget
-  - Stato attuale: **NON IMPLEMENTATO** - Potrebbe essere necessario per la sottomissione a ChatGPT App Store
-  - **Raccomandazione**: Verificare i requisiti di sottomissione ChatGPT per vedere se è richiesta una privacy policy. Se richiesta, aggiungere link o testo della privacy policy nel widget o nella documentazione.
-
-#### 8.2.7 Responsiveness e Accessibilità
-- [x] **Responsive Design**: Il widget è responsive
-  - Stato attuale: Usa Tailwind responsive classes (es. `sm:`, `md:`) e `ResizeObserver` (riga 777 in `pizzaz-shop/index.tsx`)
-- [x] **Media Queries**: Verificare uso appropriato di media queries
-    - `src/media-queries.ts`: Implementa helper per `prefersReducedMotion`, `isPrimarilyTouchDevice`, `isHoverAvailable`
-    - `useMaxHeight()`: Gestisce altezza massima dinamica basata sul contesto
-    - `useDisplayMode()`: Gestisce modalità display (inline, fullscreen, pip)
-    - Tailwind responsive classes (`sm:`, `md:`) per layout responsive
-    - `ResizeObserver` per adattamento dinamico del layout
-  - File: `src/media-queries.ts`, `src/use-max-height.ts`, `src/use-display-mode.ts`, `src/electronics-shop/index.tsx`
-- [x] **Keyboard Navigation**: Verificare supporto navigazione da tastiera
-  - **Completato**: [2026-01-08] Tutti i componenti interattivi supportano navigazione da tastiera:
-    - Tutti i bottoni sono navigabili con Tab e attivabili con Enter/Space
-    - Gli articoli cliccabili hanno `tabIndex={0}` e gestiscono `onKeyDown` per Enter/Space
-    - I bottoni di quantità hanno gestione `onKeyDown` per Enter/Space
-    - Il bottone "See all items" ha gestione `onKeyDown` per Enter/Space
-    - Focus styles visibili con `focus:outline-none focus:ring-2` per indicare elemento attivo
-    - I componenti `Button` di `@openai/apps-sdk-ui` gestiscono automaticamente la navigazione da tastiera
-  - File: `src/electronics-shop/index.tsx`
-- [ ] **Screen Reader Support**: Verificare supporto screen reader
-
-#### 8.2.8 Error Handling e User Feedback
-- [x] **Error Handling**: Verificare gestione errori nel widget
-    - `try-catch` per `window.openai.requestModal()` con logging errori (riga 618-626)
-    - `try-catch` per `window.dispatchEvent()` con logging errori (riga 916-922)
-    - `try-catch` per `window.openai.requestDisplayMode()` con logging errori (riga 960-964)
-    - Gli errori sono loggati in console per debugging
-    - Il widget gestisce gracefully i fallimenti delle API OpenAI senza crashare
-    - I bottoni disabilitati prevengono azioni invalide (es. checkout con carrello vuoto)
-  - File: `src/electronics-shop/index.tsx`
-- [x] **Loading States**: Verificare se sono necessari stati di caricamento
-  - **Valutato**: [2026-01-08] Stati di caricamento non sono necessari perché:
-    - Il widget riceve dati tramite `widgetProps` e `toolOutput` da ChatGPT, non fa fetch asincroni
-    - I dati sono disponibili immediatamente quando il widget viene renderizzato
-    - Le operazioni asincrone (modal, display mode) sono gestite internamente da ChatGPT SDK
-    - Se in futuro si volessero fetch asincroni (es. aggiornamento prodotti in tempo reale), si potrebbero aggiungere loading states
-  - File: `src/electronics-shop/index.tsx`
-- [x] **User Feedback**: Verificare che il widget fornisca feedback appropriato alle azioni utente
-    - Aggiornamento visivo immediato quando si aggiunge/rimuove quantità (aggiornamento numerico)
-    - Feedback visivo per filtri attivi (cambio variante bottone, `aria-pressed`)
-    - Feedback hover per elementi interattivi (bordo colorato, cambio opacità)
-    - Feedback focus per navigazione tastiera (ring visibile)
-    - Aggiornamento dinamico del conteggio carrello nel bottone
-    - Transizioni animate per cambi di stato (Framer Motion)
-    - I bottoni disabilitati hanno stile visivo chiaro (opacità ridotta)
-  - File: `src/electronics-shop/index.tsx`
-
-### 8.3 Problemi critici da risolvere (Client/Widget)
-
-1. **Accessibilità completa**: ✅ **COMPLETATO** [2026-01-08]
-   - ✅ Tutti i componenti interattivi hanno appropriate etichette ARIA
-   - ✅ Supporto navigazione da tastiera completo implementato
-   - ✅ Supporto screen reader completo implementato
-
-2. **CSP nei Widget HTML**: ✅ **VERIFICATO** [2026-01-08]
-   - ✅ I widget HTML sono serviti con header CSP dal server
-   - ✅ ChatGPT gestisce il rendering in iframe sandboxed
-   - ✅ Non sono necessari CSP meta tags nei widget
-
-3. **Error Handling completo**: ✅ **COMPLETATO** [2026-01-08]
-   - ✅ Gestione errori completa per tutte le operazioni asincrone
-   - ✅ Loading states valutati come non necessari (dati disponibili immediatamente)
-   - ✅ Feedback utente migliorato con aggiornamenti visivi e aria-label dinamici
-
-4. **Ottimizzazione UX per conversazione**: ✅ **VERIFICATO** [2026-01-08]
-   - ✅ Il widget gestisce bene prompt aperti tramite widgetProps
-   - ✅ Le risposte sono concise e appropriate
-   - ✅ Il widget si integra con ChatGPT senza sostituirlo
-
-5. **Data Minimization**: ✅ **VERIFICATO** [2026-01-08]
-   - ✅ Il widget richiede solo dati minimi necessari
-   - ✅ Lazy loading non necessario per il caso d'uso attuale
-
-6. **Privacy Policy**: (Opzionale)
-   - Verificare i requisiti di sottomissione ChatGPT App Store
-   - Se richiesta, aggiungere link o testo della privacy policy
-   - **Nota**: Per verifiche dettagliate, vedere `bugs.md` sezione "Verifiche da fare"
-
-### 8.4 Checklist finale pre-deployment (Client/Widget)
-
-- [x] Accessibilità completa verificata (ARIA, keyboard navigation, screen reader) - **Completato**: [2026-01-08]
-- [x] CSP configurato nei widget HTML (se necessario) - CSP gestito dal server, non necessario nei widget
-- [x] Error handling completo implementato - **Completato**: [2026-01-08]
-- [x] Loading states implementati dove necessario - **Valutato**: [2026-01-08] Non necessari per il caso d'uso attuale
-- [x] UX ottimizzata per conversazione
-- [ ] Responsive design testato su diversi dispositivi - **DA TESTARE** quando il widget è renderizzato in ChatGPT
-- [x] Widget state persiste correttamente tra interazioni
-- [ ] Privacy policy inclusa (se richiesta per sottomissione) - Verificare requisiti ChatGPT App Store
-- [ ] Test di usabilità completati - **DA COMPLETARE** dopo deployment
-- [x] Performance ottimizzata (lazy loading, code splitting se necessario) - **Valutato**: [2026-01-08] Non necessario per il caso d'uso attuale
-
 ## 9. Distribuzione e interazione con ChatGPT
 
 - [x]  **Chiarire "caricare quest'app su ChatGPT"**: Si intende la realizzazione di un'app per ChatGPT SDK, ospitata su un server e integrata con ChatGPT per mostrare i prodotti elettronici, probabilmente tramite un'azione personalizzata (Custom GPT Action).
@@ -1069,10 +800,10 @@ Questa sezione verifica che il client/widget rispetti tutte le linee guida MCP C
 
 - [ ]  **Configurazione del servizio su Render**: Crea un nuovo "Web Service" su Render.
     - [ ]  **Root Directory**: Imposta la "Root Directory" alla radice del tuo repository (`.`).
-    - [ ]  **Build Command**: `pnpm install --prefix . && pnpm run build && pip install -r electronics_server_python/requirements.txt && curl -LsSf https://setup.uv.sh | sh` (Questo comando gestisce le dipendenze frontend e Python, e installa il tool `uv` come binario.)
-      - **Aggiornato**: [2026-01-08] Il Build Command è stato aggiornato a `electronics_server_python/requirements.txt` dopo il completamento del refactoring (Sezione 6).
+    - [ ]  **Build Command**: `pnpm install --prefix . && pnpm run build && pip install -r backend/electronics_server_python/requirements.txt && curl -LsSf https://setup.uv.sh | sh` (Questo comando gestisce le dipendenze frontend e Python, e installa il tool `uv` come binario.)
+      - **Aggiornato**: [2026-01-08] Il Build Command è stato aggiornato a `backend/electronics_server_python/requirements.txt` dopo il completamento del refactoring (Sezione 6).
     - [ ]  **Start Command**: `uvicorn electronics_server_python.main:app --host 0.0.0.0 --port $PORT` (Questo comando avvia il server FastAPI personalizzato con uvicorn.)
-      - **Implementato**: [2026-01-08] Aggiunta variabile `app = mcp.sse_app()` alla fine di `electronics_server_python/main.py` per esporre l'app FastAPI per uvicorn. Il server usa FastMCP con SSE transport per compatibilità con ChatGPT SDK.
+      - **Implementato**: [2026-01-08] Aggiunta variabile `app = mcp.sse_app()` alla fine di `backend/electronics_server_python/main.py` per esporre l'app FastAPI per uvicorn. Il server usa FastMCP con SSE transport per compatibilità con ChatGPT SDK.
       - **Nota**: Il comando usa `uvicorn` con il modulo `electronics_server_python.main` e la variabile `app` esposta. Il server personalizzato integra MotherDuck direttamente usando DuckDB.
       - **Verificare**: Il comando deve essere testato su Render per confermare che funziona correttamente.
     - [ ]  **Variabili d'ambiente**: Aggiungi `motherduck_token` (con il tuo token), `MCP_ALLOWED_HOSTS` (deve includere `sdk-electronics.onrender.com`), `MCP_ALLOWED_ORIGINS` (deve includere `https://chat.openai.com` e `https://sdk-electronics.onrender.com`) e altre variabili necessarie.
@@ -1089,7 +820,7 @@ Questa sezione verifica che il client/widget rispetti tutte le linee guida MCP C
 
 ### 9.3 Adattamento degli strumenti (Tools)
 
-- [x]  **Esaminare la definizione degli strumenti nel backend Python**: Capire come gli strumenti attuali sono definiti in `electronics_server_python/main.py`.
+- [x]  **Esaminare la definizione degli strumenti nel backend Python**: Capire come gli strumenti attuali sono definiti in `backend/electronics_server_python/main.py`.
     - `electronics-map`: Widget mappa interattiva
     - `electronics-carousel`: Widget carosello prodotti
     - `electronics-albums`: Widget galleria prodotti
@@ -1486,171 +1217,3 @@ Attraverso il tool `product-list` accederai al database `app_gpt_elettronica` co
 - Include informazioni sui limiti di visualizzazione (12 prodotti nel carosello, 24 nello shop)
 - È scritto in italiano come richiesto per l'app
 
-## 11. Migliorie UI e UX
-
-Questa sezione documenta le migliorie implementate per migliorare l'esperienza utente e le prestazioni dei widget.
-
-### 11.1 Filtri dinamici per categoria nello shop
-
-- [x] **Implementazione filtri dinamici per categoria**: Sostituiti i filtri hardcoded (vegetarian, vegan, size, spicy) con filtri dinamici basati sulle categorie reali dei prodotti elettronici.
-  - **Completato**: [2026-01-09] Implementato sistema di filtri dinamici che estrae automaticamente le categorie disponibili dai prodotti.
-  - **Implementazione**:
-    1. ✅ **Mappa categorie** (`src/electronics-shop/index.tsx`):
-       - Creata `CATEGORY_MAPPING` che mappa categorie principali (TV & Video, Audio & Speakers, Computers, Storage, Accessories) ai loro tag associati
-       - Ogni categoria ha una lista di tag che vengono cercati nei prodotti
-    2. ✅ **Funzione di estrazione categorie** (`src/electronics-shop/index.tsx`):
-       - Creata funzione `getAvailableCategories()` che:
-         - Analizza tutti i prodotti e conta quanti appartengono a ciascuna categoria
-         - Crea filtri solo per categorie che hanno almeno un prodotto
-         - Ordina le categorie per numero di prodotti (dalla più popolare alla meno popolare)
-         - Genera ID univoci per ogni categoria (es. "TV & Video" → "tv-&-video")
-    3. ✅ **Filtri dinamici nel componente**:
-       - Aggiunto `useMemo` per generare filtri dinamici basati su `cartItems`
-       - I filtri vengono rigenerati automaticamente quando cambiano i prodotti
-    4. ✅ **Logica di filtraggio aggiornata**:
-       - Modificata `visibleCartItems` per usare i filtri dinamici invece di `FILTERS` hardcoded
-       - Il filtro verifica se un prodotto ha almeno uno dei tag della categoria selezionata (match case-insensitive)
-    5. ✅ **Rendering filtri aggiornato**:
-       - Sostituito `FILTERS.map()` con `filters.map()` nel rendering
-       - I filtri vengono visualizzati dinamicamente in base ai prodotti disponibili
-  - **Vantaggi**:
-    - ✅ Filtri sempre aggiornati: mostrano solo categorie con prodotti disponibili
-    - ✅ Ordinamento intelligente: categorie più popolari appaiono per prime
-    - ✅ Estensibilità: facile aggiungere nuove categorie modificando `CATEGORY_MAPPING`
-    - ✅ Performance: filtri calcolati solo quando cambiano i prodotti (memoizzazione)
-  - **Categorie supportate**:
-    - TV & Video: prodotti con tag "tv", "televisions", "tv mounts", "video", "home theater", etc.
-    - Audio & Speakers: prodotti con tag "audio", "speakers", "home audio", "stereos", "bluetooth speakers", etc.
-    - Computers: prodotti con tag "computers", "computer accessories", "laptops", "tablets", etc.
-    - Storage: prodotti con tag "storage", "hard drives", "ssd", "hdd", "nas", etc.
-    - Accessories: prodotti con tag "accessories", "electronics accessories", "cables", "adapters", etc.
-  - **File modificati**:
-    - `src/electronics-shop/index.tsx`: Aggiunta `CATEGORY_MAPPING`, `getAvailableCategories()`, aggiornata logica filtri e rendering
-
-### 11.2 Limite di prodotti visualizzati
-
-- [x] **Implementazione limite prodotti nello shop**: Aggiunto limite massimo di prodotti visualizzati nello shop per migliorare le prestazioni.
-  - **Completato**: [2026-01-09] Implementato limite di 24 prodotti nello shop.
-  - **Implementazione**:
-    1. ✅ **Costante limite** (`src/electronics-shop/index.tsx`):
-       - Aggiunta costante `MAX_PRODUCTS_SHOP = 24` per definire il limite massimo
-    2. ✅ **Lista prodotti limitata**:
-       - Creato `displayedCartItems` con `useMemo` che limita `visibleCartItems` ai primi 24 prodotti
-       - `displayedCartItems` viene ricalcolato solo quando cambia `visibleCartItems`
-    3. ✅ **Rendering aggiornato**:
-       - Sostituito `visibleCartItems.map()` con `displayedCartItems.map()` nel rendering
-       - Aggiornato calcolo delle righe per usare `displayedCartItems.length`
-    4. ✅ **Layout effect aggiornato**:
-       - Aggiornato `useLayoutEffect` per dipendere da `displayedCartItems` invece di `visibleCartItems`
-  - **Vantaggi**:
-    - ✅ Performance migliorata: meno elementi DOM da renderizzare
-    - ✅ Caricamento più veloce: ridotto il tempo di rendering iniziale
-    - ✅ Esperienza utente migliore: interfaccia più reattiva
-  - **File modificati**:
-    - `src/electronics-shop/index.tsx`: Aggiunta `MAX_PRODUCTS_SHOP`, creato `displayedCartItems`, aggiornato rendering e layout effect
-
-- [x] **Implementazione limite prodotti nel carosello**: Aggiunto limite massimo di prodotti visualizzati nel carosello per migliorare le prestazioni.
-  - **Completato**: [2026-01-09] Implementato limite di 12 prodotti nel carosello.
-  - **Implementazione**:
-    1. ✅ **Costante limite** (`src/electronics-carousel/index.jsx`):
-       - Aggiunta costante `MAX_PRODUCTS_CAROUSEL = 12` per definire il limite massimo
-    2. ✅ **Lista prodotti limitata**:
-       - Modificato `places` per limitare l'array ai primi 12 prodotti usando `.slice(0, MAX_PRODUCTS_CAROUSEL)`
-       - Il limite viene applicato direttamente quando si legge `toolOutput?.places`
-  - **Vantaggi**:
-    - ✅ Performance migliorata: meno slide da renderizzare nel carosello
-    - ✅ Navigazione più fluida: carosello più leggero e reattivo
-    - ✅ Esperienza utente migliore: caricamento più veloce
-  - **File modificati**:
-    - `src/electronics-carousel/index.jsx`: Aggiunta `MAX_PRODUCTS_CAROUSEL`, limitato array `places`
-  - **Note**:
-    - I limiti sono configurabili modificando le costanti `MAX_PRODUCTS_SHOP` e `MAX_PRODUCTS_CAROUSEL` all'inizio dei rispettivi file
-    - I limiti vengono applicati dopo il filtraggio (se applicabile), quindi se ci sono filtri attivi, vengono mostrati fino a 24 prodotti filtrati nello shop e fino a 12 nel carosello
-
-### 11.3 Migliorie carosello prodotti
-
-- [x] **Spazio laterale per evitare taglio prima card**: Aggiunto padding orizzontale al wrapper delle card del carosello per evitare che la prima card venga tagliata a sinistra su desktop e mobile.
-  - **Completato**: [2026-01-15] Aggiunto `px-4` al container flex delle card.
-  - **Implementazione**:
-    - Aggiornato il wrapper delle card in `src/electronics-carousel/index.jsx` per aggiungere padding orizzontale costante.
-  - **File modificati**:
-    - `src/electronics-carousel/index.jsx`
-
-- [x] **Riga prezzo dedicata nelle card del carosello**: Mostrato il prezzo in una riga separata sotto il nome per migliorarne la leggibilità.
-  - **Completato**: [2026-01-15] Aggiunta riga prezzo con stile dedicato.
-  - **Implementazione**:
-    - Inserita riga prezzo condizionale (`place.price`) sotto il nome in `src/electronics-carousel/PlaceCard.jsx`.
-  - **File modificati**:
-    - `src/electronics-carousel/PlaceCard.jsx`
-
-### 11.4 Pulizia warning TypeScript
-
-- [x] **Risolti warning TS nel carrello**: Rimossi import e helper non utilizzati che generavano `ts6133`.
-  - **Completato**: [2026-01-15] Rimosse utility di debug non più usate e import inutilizzati.
-  - **Implementazione**:
-    - Eliminati `useEffect`, `useMemo`, `useRef`, `useOpenAiGlobal`, `JsonPanel`, `usePrettyJson`, `createDefaultCartState` e variabili debug non usate.
-  - **File modificati**:
-    - `src/shopping-cart/index.tsx`
-
-### 11.5 Riepilogo post-acquisto e svuotamento carrello
-
-- [x] **Riepilogo acquisto nel carrello**: Dopo un pagamento riuscito, il carrello viene svuotato e viene mostrato un riepilogo completo dell'ordine.
-  - **Completato**: [2026-01-16] Aggiunto riepilogo ordine con prodotti, totali, dati di fatturazione, data di consegna stimata e ringraziamento.
-  - **Implementazione**:
-    1. ✅ **Snapshot ordine** (`src/shopping-cart/index.tsx`):
-       - Salva i prodotti acquistati e calcola i totali (subtotale, IVA, spedizione, totale).
-    2. ✅ **Svuotamento carrello**:
-       - Aggiunta `clearCart()` in `src/use-cart.ts` per azzerare gli item dopo il successo.
-    3. ✅ **Riepilogo UI**:
-       - Sezione "Riepilogo acquisto" con elenco prodotti, totali, dati fattura e data consegna casuale (3-7 giorni).
-  - **File modificati**:
-    - `src/use-cart.ts`
-    - `src/shopping-cart/index.tsx`
-
-### 11.6 Modale checkout per dati fatturazione
-
-- [x] **Modale dati di fatturazione**: Il checkout nel carrello avviene tramite modale dedicata avviata dal pulsante "Procedi al pagamento".
-  - **Completato**: [2026-01-16] Spostati i campi di fatturazione in una modale con conferma pagamento.
-  - **Implementazione**:
-    1. ✅ **Pulsante checkout**: apre la modale per l'inserimento dei dati.
-    2. ✅ **Conferma e paga**: avvia il flusso di pagamento e chiude la modale al successo.
-    3. ✅ **Stripe metadata ridotta**: rimosse descrizioni lunghe dagli item inviati a Stripe (limite 500 caratteri per valore metadata).
-  - **File modificati**:
-    - `src/shopping-cart/index.tsx`
-    - `electronics_server_python/main.py`
-
-### 11.7 Spedizione visibile e IVA inclusa
-
-- [x] **Totali senza IVA esplicita**: L'IVA è considerata inclusa nei prezzi di listino; il carrello non aggiunge IVA al totale.
-  - **Completato**: [2026-01-16] Rimossa IVA dal calcolo dei totali, mantenuta la spedizione.
-  - **Implementazione**:
-    1. ✅ **Backend**: Calcolo dei totali con `tax = 0` in `electronics_server_python/main.py`.
-    2. ✅ **Frontend**: Totali e riepilogo senza riga IVA in `src/shopping-cart/index.tsx`.
-    3. ✅ **Messaggio cliente**: Spedizione mostrata nel carrello con nota "IVA inclusa".
-  - **File modificati**:
-    - `electronics_server_python/main.py`
-    - `src/shopping-cart/index.tsx`
-
-- [x] **Compatibilità import JSX in TSX**: Garantita la risoluzione dei componenti `.jsx` importati in file TypeScript.
-  - **Completato**: [2026-01-15] Aggiunta dichiarazione di modulo per `.jsx` e aggiornato import `SafeImage`.
-  - **Implementazione**:
-    - Creato `src/jsx.d.ts` con dichiarazione `declare module "*.jsx"`.
-    - Aggiornato import `SafeImage` in `src/utils/ProductDetails.tsx` per usare l'estensione `.jsx`.
-  - **File modificati**:
-    - `src/jsx.d.ts`
-    - `src/utils/ProductDetails.tsx`
-
-### 11.3 Miglioramenti visivi carosello
-
-- [x] **Separazione visiva delle card**: aggiunta ombreggiatura e hover per distinguere meglio le card nel carosello.
-  - **Completato**: [2026-01-15]
-  - **Implementazione**:
-    - `src/electronics-carousel/PlaceCard.jsx`: aggiunte classi `bg-white`, `rounded-2xl`, `ring-1 ring-black/5`, `shadow[...]`, `transition-shadow`, `hover:shadow[...]`
-  - **Vantaggi**:
-    - ✅ Card più distinguibili tra loro
-    - ✅ Maggiore profondità visiva durante lo scroll
-
-- [x] **Prezzo evidenziato nella card**: aggiunta una riga prezzo sotto il nome prodotto quando disponibile.
-  - **Completato**: [2026-01-15]
-  - **Implementazione**:
-    - `src/electronics-carousel/PlaceCard.jsx`: rendering condizionale di `place.price` con stile `text-sm font-semibold`

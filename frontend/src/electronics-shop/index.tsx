@@ -13,7 +13,7 @@ import {
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, useLocation, useNavigate } from "react-router-dom";
 import { useDisplayMode } from "../use-display-mode";
-import { INITIAL_CART_ITEMS as NEW_INITIAL_CART_ITEMS } from "../../py/new_initial_cart_items";
+import { INITIAL_CART_ITEMS as NEW_INITIAL_CART_ITEMS } from "../py/new_initial_cart_items";
 import { useMaxHeight } from "../use-max-height";
 import { useOpenAiGlobal } from "../use-openai-global";
 import { useWidgetProps } from "../use-widget-props";

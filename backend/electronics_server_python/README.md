@@ -76,7 +76,7 @@ Cross-origin requests are allowed so you can drive the server from local tooling
 The server follows the principle of least privilege:
 
 - **Database Access**: The server only accesses the `app_gpt_elettronica` database in MotherDuck, specifically the `prodotti_xeel_shop` table in the `main` schema. It performs read-only operations (SELECT queries only).
-- **No File System Access**: The server does not access the local file system except for reading widget HTML files from the `assets/` directory (read-only).
+- **No File System Access**: The server does not access the local file system except for reading widget HTML files from the `frontend/assets/` directory (read-only).
 - **No Network Access**: The server does not make external network requests except for the MotherDuck database connection (which is necessary for product data).
 - **No User Data Storage**: The server does not store or persist any user data. All state is managed client-side by ChatGPT.
 

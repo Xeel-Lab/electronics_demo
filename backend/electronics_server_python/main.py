@@ -29,7 +29,7 @@ from pathlib import Path
 from decimal import Decimal, ROUND_HALF_UP
 
 # Ports and paths (overridable via env vars).
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 BACKEND_PORT = os.environ.get("BACKEND_PORT", "8000")
 FRONTEND_PORT = os.environ.get("FRONTEND_PORT", "3000")
 PROXY_PORT = os.environ.get("PROXY_PORT", "4444")
@@ -44,7 +44,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Debug logging (NDJSON) for connection issues.
-DEBUG_LOG_PATH = Path(r"c:\Projects\sdk-electronics\.cursor\debug.log")
+DEBUG_LOG_PATH = ROOT / ".cursor" / "debug.log"
 
 
 def _debug_log(hypothesis_id: str, location: str, message: str, data: dict | None = None) -> None:
@@ -156,7 +156,7 @@ class ElectronicsWidget:
     response_text: str
 
 
-ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
+ASSETS_DIR = ROOT / "frontend" / "assets"
 
 def get_motherduck_connection(retries: int = 5, base_delay: float = 0.5):
     """
@@ -3304,7 +3304,7 @@ async def _call_tool_request(req: types.CallToolRequest) -> types.ServerResult:
                 )
             
             # Leggi i prompt developer (core + runtime context)
-            base_path = Path(__file__).resolve().parent.parent / "prompts"
+            base_path = ROOT / "prompts"
             core_path = base_path / "developer_core.md"
             runtime_path = base_path / "runtime_context.md"
 
@@ -4565,7 +4565,7 @@ app.mount("/sse", sse)    # /sse
 
 # Esegui get_instructions all'avvio del server
 async def _startup_load_instructions() -> None:
-    base_path = Path(__file__).resolve().parent.parent / "prompts"
+    base_path = ROOT / "prompts"
     core_path = base_path / "developer_core.md"
     runtime_path = base_path / "runtime_context.md"
     print("motherduck_token:", "set" if os.getenv("motherduck_token") else "missing")
@@ -4666,7 +4666,7 @@ async def root_handler(request):
     </ul>
     
     <h2>Documentation</h2>
-    <p>See <code>electronics_server_python/README.md</code> for more information.</p>
+    <p>See <code>backend/electronics_server_python/README.md</code> for more information.</p>
 </body>
 </html>"""
     return StarletteHTMLResponse(content=html_content)
