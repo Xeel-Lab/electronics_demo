@@ -283,7 +283,7 @@ async function main() {
     console.log("new hash: ", h);
 
     // WARNING: REPLACE WITH YOUR NGROK URL
-    const defaultBaseUrl = "https://brandon-postsystolic-similarly.ngrok-free.dev";
+    const defaultBaseUrl = "https://secondary-dev.ngrok.app";
     const baseUrlCandidate = process.env.BASE_URL?.trim() ?? "";
     const baseUrlRaw = baseUrlCandidate.length > 0 ? baseUrlCandidate : defaultBaseUrl;
     const normalizedBaseUrl = baseUrlRaw.replace(/\/+$/, "") || defaultBaseUrl;

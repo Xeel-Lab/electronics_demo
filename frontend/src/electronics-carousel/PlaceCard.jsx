@@ -28,9 +28,9 @@ function PlaceCard({ place, onCardClick }) {
       name: place.name,
       price: place.price,
       description: place.description,
-      thumbnail: place.thumbnail,
+      thumbnail: place.image,
     });
-  }, [place.id, place.name, place.price, place.description, place.thumbnail, addToCart]);
+  }, [place.id, place.name, place.price, place.description, place.image, addToCart]);
 
   const inCart = isInCart(place.id);
 
@@ -49,7 +49,7 @@ function PlaceCard({ place, onCardClick }) {
     >
       <div className="w-full">
         <SafeImage
-          src={place.thumbnail}
+          src={place.image}
           alt={place.name}
           className="w-full aspect-square rounded-2xl object-cover ring ring-black/5 shadow-[0px_2px_6px_rgba(0,0,0,0.06)]"
           proxyBaseUrl={proxyBaseUrl}
@@ -61,7 +61,7 @@ function PlaceCard({ place, onCardClick }) {
         </div>
         {place.price ? (
           <div className="text-sm font-semibold text-black/80 mt-1">
-            {place.price}
+            {place.price} €
           </div>
         ) : null}
         <div className="text-xs mt-1 text-black/60 flex items-center gap-1">

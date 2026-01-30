@@ -12,6 +12,8 @@ MCP Protocol Version: 2024-11-05
 
 from __future__ import annotations
 
+from dotenv import load_dotenv
+import duckdb
 import os
 from copy import deepcopy
 from dataclasses import dataclass
@@ -22,7 +24,17 @@ from typing import Any, Dict, List
 import mcp.types as types
 from mcp.server.fastmcp import FastMCP
 from mcp.server.transport_security import TransportSecuritySettings
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+
+env_paths = [
+    Path(__file__).resolve().parent.parent.parent / ".env",
+]
+
+env_path = None
+for path in env_paths:
+    if path.exists():
+        env_path = path
+        load_dotenv(dotenv_path=env_path)
+        break
 
 
 @dataclass(frozen=True)
@@ -79,18 +91,6 @@ WIDGETS_BY_URI: Dict[str, Widget] = {
 }
 
 
-class PizzaInput(BaseModel):
-    """Schema for pizza tools."""
-
-    pizza_topping: str = Field(
-        ...,
-        alias="pizzaTopping",
-        description="Topping to mention when rendering the widget.",
-    )
-
-    model_config = ConfigDict(populate_by_name=True, extra="forbid")
-
-
 def _split_env_list(value: str | None) -> List[str]:
     if not value:
         return []
@@ -108,6 +108,23 @@ def _transport_security_settings() -> TransportSecuritySettings:
         allowed_origins=allowed_origins,
     )
 
+def get_motherduck_connection() -> duckdb.DuckDBPyConnection:
+    md_token = os.getenv("motherduck_token") or os.getenv("MOTHERDUCK_TOKEN")
+    if not md_token:
+        raise ValueError("motherduck_token non trovato nelle variabili d'ambiente")
+    connection = duckdb.connect(f"md:electronics_demo?motherduck_token={md_token}")
+    print("Connected to MotherDuck")
+    return connection
+
+
+def get_products_from_motherduck() -> list[dict]:
+    query = """
+        SELECT *
+        FROM main.products
+    """
+    with get_motherduck_connection() as con:
+        df = con.execute(query).fetchdf()
+        return df.to_dict(orient="records")
 
 mcp = FastMCP(
     name="mcp-python",
@@ -115,16 +132,15 @@ mcp = FastMCP(
     transport_security=_transport_security_settings(),
 )
 
-
 TOOL_INPUT_SCHEMA: Dict[str, Any] = {
     "type": "object",
     "properties": {
-        "pizzaTopping": {
-            "type": "string",
-            "description": "Topping to mention when rendering the widget.",
+        "limit": {
+            "type": "integer",
+            "description": "Max number of products to return.",
+            "minimum": 1,
         }
     },
-    "required": ["pizzaTopping"],
     "additionalProperties": False,
 }
 
@@ -236,24 +252,39 @@ async def _call_tool_request(req: types.CallToolRequest) -> types.ServerResult:
             )
         )
 
-    arguments = req.params.arguments or {}
-    try:
-        payload = PizzaInput.model_validate(arguments)
-    except ValidationError as exc:
+    meta = _tool_invocation_meta(widget)
+
+    if widget.identifier == "electronics-carousel":
+        arguments = req.params.arguments or {}
+        limit = arguments.get("limit")
+        try:
+            products = get_products_from_motherduck()
+        except Exception as e:
+            print(f"Error fetching products from MotherDuck: {e}")
+            return types.ServerResult(
+                types.CallToolResult(
+                    content=[
+                        types.TextContent(
+                            type="text",
+                            text="MotherDuck connection failed while fetching products.",
+                        )
+                    ],
+                    isError=True,
+                )
+            )
+        if isinstance(limit, int) and limit > 0:
+            products = products[:limit]
+        places = [
+            product
+            for index, product in enumerate(products)
+        ]
         return types.ServerResult(
             types.CallToolResult(
-                content=[
-                    types.TextContent(
-                        type="text",
-                        text=f"Input validation error: {exc.errors()}",
-                    )
-                ],
-                isError=True,
+                content=[types.TextContent(type="text", text="Fetched products.")],
+                structuredContent={"places": places},
+                _meta=meta,
             )
         )
-
-    topping = payload.pizza_topping
-    meta = _tool_invocation_meta(widget)
 
     return types.ServerResult(
         types.CallToolResult(
@@ -263,11 +294,19 @@ async def _call_tool_request(req: types.CallToolRequest) -> types.ServerResult:
                     text=widget.response_text,
                 )
             ],
-            structuredContent={"pizzaTopping": topping},
             _meta=meta,
         )
     )
 
+@mcp._mcp_server.call_tool()
+async def product_list_tool(req: types.CallToolRequest) -> types.ServerResult:
+    products = get_products_from_motherduck()
+    return types.ServerResult(
+        types.CallToolResult(
+            content=[types.TextContent(type="text", text="Fetched products.")],
+            structuredContent={"products": products},
+        )
+    )
 
 mcp._mcp_server.request_handlers[types.CallToolRequest] = _call_tool_request
 mcp._mcp_server.request_handlers[types.ReadResourceRequest] = _handle_read_resource
