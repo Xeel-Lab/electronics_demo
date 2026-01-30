@@ -27,6 +27,7 @@ from mcp.server.transport_security import TransportSecuritySettings
 
 env_paths = [
     Path(__file__).resolve().parent / ".env.local",
+    Path(__file__).resolve().parent.parent.parent / ".env",
 ]
 
 env_path = None
