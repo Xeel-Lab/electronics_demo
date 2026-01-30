@@ -168,24 +168,22 @@ def _tool_invocation_meta(widget: Widget) -> Dict[str, Any]:
 
 @mcp._mcp_server.list_tools()
 async def _list_tools() -> List[types.Tool]:
-    tools = []
-    tools.extend([
-        types.Tool(
-            name=widget.identifier,
-            title=widget.title,
-            description=widget.title,
-            inputSchema=deepcopy(TOOL_INPUT_SCHEMA),
-            _meta=_tool_meta(widget),
-            annotations={
-                "destructiveHint": False,
-                "openWorldHint": False,
-                "readOnlyHint": True,
-            },
-        )
-        for widget in widgets
-    ])
-
-    tools.append(
+    return [
+        *[
+            types.Tool(
+                name=widget.identifier,
+                title=widget.title,
+                description=widget.title,
+                inputSchema=deepcopy(TOOL_INPUT_SCHEMA),
+                _meta=_tool_meta(widget),
+                annotations={
+                    "destructiveHint": False,
+                    "openWorldHint": False,
+                    "readOnlyHint": True,
+                },
+            )
+            for widget in widgets
+        ],
         types.Tool(
             name="min",
             title="Expose prompts",
@@ -201,10 +199,7 @@ async def _list_tools() -> List[types.Tool]:
                 "readOnlyHint": True,
             },
         )
-    )
-
-    return tools
-
+    ]
 
 @mcp._mcp_server.list_resources()
 async def _list_resources() -> List[types.Resource]:
