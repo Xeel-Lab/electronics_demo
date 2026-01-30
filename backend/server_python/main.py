@@ -26,7 +26,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.transport_security import TransportSecuritySettings
 
 env_paths = [
-    Path(__file__).resolve().parent.parent.parent / ".env",
+    Path(__file__).resolve().parent / ".env.local",
 ]
 
 env_path = None
@@ -69,12 +69,12 @@ def _load_widget_html(component_name: str) -> str:
 
 widgets: List[Widget] = [
     Widget(
-        identifier="electronics-carousel",
-        title="Show Electronics Carousel",
-        template_uri="ui://widget/electronics-carousel.html",
+        identifier="carousel",
+        title="Show Carousel",
+        template_uri="ui://widget/carousel.html",
         invoking="Carousel some spots",
         invoked="Served a fresh carousel",
-        html=_load_widget_html("electronics-carousel"),
+        html=_load_widget_html("carousel"),
         response_text="Rendered a carousel!",
     ),
 ]
@@ -109,7 +109,7 @@ def _transport_security_settings() -> TransportSecuritySettings:
     )
 
 def get_motherduck_connection() -> duckdb.DuckDBPyConnection:
-    md_token = os.getenv("motherduck_token") or os.getenv("MOTHERDUCK_TOKEN")
+    md_token = os.getenv("motherduck_token")
     if not md_token:
         raise ValueError("motherduck_token non trovato nelle variabili d'ambiente")
     connection = duckdb.connect(f"md:electronics_demo?motherduck_token={md_token}")
@@ -167,14 +167,14 @@ def _tool_invocation_meta(widget: Widget) -> Dict[str, Any]:
 
 @mcp._mcp_server.list_tools()
 async def _list_tools() -> List[types.Tool]:
-    return [
+    tools = []
+    tools.extend([
         types.Tool(
             name=widget.identifier,
             title=widget.title,
             description=widget.title,
             inputSchema=deepcopy(TOOL_INPUT_SCHEMA),
             _meta=_tool_meta(widget),
-            # To disable the approval prompt for the tools
             annotations={
                 "destructiveHint": False,
                 "openWorldHint": False,
@@ -182,7 +182,27 @@ async def _list_tools() -> List[types.Tool]:
             },
         )
         for widget in widgets
-    ]
+    ])
+
+    tools.append(
+        types.Tool(
+            name="min",
+            title="Expose prompts",
+            description="Returns developer_core.md and runtime_context.md",
+            inputSchema={
+                "type": "object",
+                "properties": {},
+                "additionalProperties": False,
+            },
+            annotations={
+                "destructiveHint": False,
+                "openWorldHint": False,
+                "readOnlyHint": True,
+            },
+        )
+    )
+
+    return tools
 
 
 @mcp._mcp_server.list_resources()
@@ -238,6 +258,19 @@ async def _handle_read_resource(req: types.ReadResourceRequest) -> types.ServerR
 
 
 async def _call_tool_request(req: types.CallToolRequest) -> types.ServerResult:
+    if req.params.name == "min":
+        developer_core = _load_prompt_text(DEVELOPER_CORE_PATH)
+        runtime_context = _load_prompt_text(RUNTIME_CONTEXT_PATH)
+        return types.ServerResult(
+            types.CallToolResult(
+                content=[types.TextContent(type="text", text="Loaded prompts.")],
+                structuredContent={
+                    "developer_core": developer_core,
+                    "runtime_context": runtime_context,
+                },
+            )
+        )
+
     widget = WIDGETS_BY_ID.get(req.params.name)
     if widget is None:
         return types.ServerResult(
@@ -254,9 +287,9 @@ async def _call_tool_request(req: types.CallToolRequest) -> types.ServerResult:
 
     meta = _tool_invocation_meta(widget)
 
-    if widget.identifier == "electronics-carousel":
+    if widget.identifier == "carousel":
         arguments = req.params.arguments or {}
-        limit = arguments.get("limit")
+        limit = arguments.get("limit", 20)
         try:
             products = get_products_from_motherduck()
         except Exception as e:
@@ -332,3 +365,14 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run("main:app", host="0.0.0.0", port=8000)
+
+# region: esposizione prompts
+
+PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
+DEVELOPER_CORE_PATH = PROMPTS_DIR / "developer_core.md"
+RUNTIME_CONTEXT_PATH = PROMPTS_DIR / "runtime_context.md"
+
+def _load_prompt_text(path: Path) -> str:
+    if not path.exists():
+        return ""
+    return path.read_text(encoding="utf8")

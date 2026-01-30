@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, X, ShoppingCart } from "lucide-react";
 import { Button } from "@openai/apps-sdk-ui/components/Button";
-import SafeImage from "../electronics/SafeImage.jsx";
+import SafeImage from "../map/SafeImage.jsx";
 import { useProxyBaseUrl } from "../use-proxy-base-url";
 import { useCart } from "../use-cart";
 import type { CartItem } from "../types";
@@ -137,7 +137,7 @@ export default function ProductDetails({
           candidatePriceValue != null &&
           Number.isFinite(candidatePriceValue)
         ) {
-          const priceDelta = Math.abs(candidatePriceValue - currentPriceValue);
+          const priceDelta = Math.abs(candidatePriceValue - (currentPriceValue ?? 0));
           priceScore =
             priceDelta <= priceBand ? 1 - priceDelta / priceBand : -0.5;
         }

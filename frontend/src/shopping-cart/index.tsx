@@ -6,7 +6,7 @@ import { AvocadoIcon, BreadIcon, EggIcon, JarIcon, TomatoIcon } from "./icons";
 import CrossSellSection from "./CrossSellSection";
 import type { CartItem } from "../types";
 import ProductDetails from "../utils/ProductDetails";
-import SafeImage from "../electronics/SafeImage.jsx";
+import SafeImage from "../map/SafeImage.jsx";
 import { useProxyBaseUrl } from "../use-proxy-base-url";
 
 const iconMatchers = [
