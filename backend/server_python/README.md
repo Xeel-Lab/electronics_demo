@@ -53,7 +53,7 @@ python main.py
 Or using uvicorn directly:
 
 ```bash
-uvicorn electronics_server_python.main:app --port 8000
+uvicorn server_python.main:app --port 8000
 ```
 
 This boots a FastAPI app with uvicorn on `http://127.0.0.1:8000`. The endpoints are:
@@ -105,11 +105,11 @@ Logs do not contain sensitive information (no tokens, user data, or PII).
 
 The server exposes the following tools:
 
-- `electronics-map`: Interactive map of electronics stores
-- `electronics-carousel`: Product carousel widget (max 6 products, shows only requested category)
-- `electronics-albums`: Product gallery widget
-- `electronics-list`: Product list widget
-- `electronics-shop`: Full electronics shop interface
+- `map`: Interactive map of electronics stores
+- `carousel`: Product carousel widget (max 6 products, shows only requested category)
+- `albums`: Product gallery widget
+- `list`: Product list widget
+- `shop`: Full electronics shop interface
 - `product-list`: Retrieve products from MotherDuck database
 - `shopping-cart`: Shopping cart widget (displays products added via "Add to Cart" buttons)
 

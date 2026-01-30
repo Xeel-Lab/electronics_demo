@@ -74,7 +74,7 @@ Questo documento raccoglie le specifiche lato frontend. Le specifiche generali e
 - [x] **Widget aggiornati per leggere solo da toolOutput** [2026-01-09]:
   - `frontend/src/electronics-carousel/index.jsx`: Legge **solo** da `toolOutput?.places || []` (fallback JSON rimosso)
   - `frontend/src/electronics/index.jsx` (map): Legge **solo** da `toolOutput?.places || []` (fallback JSON rimosso)
-  - `frontend/src/electronics-list/index.jsx`: Legge **solo** da `toolOutput?.places || []` (fallback JSON rimosso)
+  - `frontend/src/list/index.jsx`: Legge **solo** da `toolOutput?.places || []` (fallback JSON rimosso)
   - `frontend/src/mixed-auth-search/index.jsx`: Legge **solo** da `toolOutput?.places || []` (fallback JSON rimosso)
   - `frontend/src/electronics-albums/index.jsx`: Legge **solo** da `toolOutput?.albums || []` (fallback JSON rimosso)
 - [x] **Asset rigenerati** [2026-01-09]:

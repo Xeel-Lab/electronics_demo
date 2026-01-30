@@ -124,7 +124,9 @@ export function useCart() {
     if (widgetStateFromGlobal && Array.isArray(widgetStateFromGlobal.items)) {
       setCartState((prevState) => {
         const currentItems = Array.isArray(prevState?.items) ? prevState.items : [];
-        const globalItems = widgetStateFromGlobal.items;
+        const globalItems = Array.isArray(widgetStateFromGlobal.items)
+          ? widgetStateFromGlobal.items
+          : [];
         // Solo sincronizza se è diverso E se lo stato globale ha più items (non sovrascrivere con uno stato vuoto)
         const currentItemsStr = JSON.stringify(currentItems);
         const globalItemsStr = JSON.stringify(globalItems);
@@ -207,6 +209,7 @@ export function useCart() {
             isUpdatingLocalRef.current = false;
           }, 200);
         }).catch((error) => {
+          console.error("Error updating widget state:", error);
           isUpdatingLocalRef.current = false;
         });
       } else {

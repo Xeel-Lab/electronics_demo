@@ -1,17 +1,19 @@
 import React from "react";
+import "../index.css";
 import { createRoot } from "react-dom/client";
 import useEmblaCarousel from "embla-carousel-react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useMaxHeight } from "../use-max-height";
-import { useOpenAiGlobal } from "../use-openai-global";
-import FullscreenViewer from "./FullscreenViewer";
-import AlbumCard from "./AlbumCard";
+import PlaceCard from "./PlaceCard";
 import { Button } from "@openai/apps-sdk-ui/components/Button";
+import { useOpenAiGlobal } from "../use-openai-global";
+import { AnimatePresence } from "framer-motion";
+import ProductDetails from "../utils/ProductDetails";
 
-function AlbumsCarousel({ onSelect }) {
+function App() {
   // Leggi dati da toolOutput (popolato dal server quando recupera dati da MotherDuck)
   const toolOutput = useOpenAiGlobal("toolOutput");
-  const albums = toolOutput?.albums || [];
+  const places = (toolOutput?.places || []);
+  const [selectedPlace, setSelectedPlace] = React.useState(null);
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "center",
     loop: false,
@@ -38,14 +40,30 @@ function AlbumsCarousel({ onSelect }) {
   }, [emblaApi]);
 
   return (
-    <div className="antialiased relative w-full text-black py-5 select-none rounded-2xl shadow-sm">
-      <div className="overflow-hidden max-sm:mx-5" ref={emblaRef}>
-        <div className="flex gap-5 items-stretch">
-          {albums.map((album) => (
-            <AlbumCard key={album.id} album={album} onSelect={onSelect} />
+    <div className="antialiased relative w-full text-black py-5 bg-[#3D4347] rounded-2xl shadow-sm">
+      <div className="overflow-hidden" ref={emblaRef}>
+        <div className="flex gap-4 px-4 max-sm:mx-5 items-stretch">
+          {places.map((place) => (
+            <PlaceCard 
+              key={place.id} 
+              place={place} 
+              onCardClick={setSelectedPlace}
+            />
           ))}
         </div>
       </div>
+      <AnimatePresence>
+        {selectedPlace && (
+          <ProductDetails
+            place={selectedPlace}
+            onClose={() => setSelectedPlace(null)}
+            position="modal"
+            relatedSourceItems={places}
+            onSelectRelated={(item) => setSelectedPlace(item)}
+          />
+        )}
+      </AnimatePresence>
+      {/* Edge gradients */}
       <div
         aria-hidden
         className={
@@ -86,7 +104,7 @@ function AlbumsCarousel({ onSelect }) {
           className="absolute left-2 top-1/2 -translate-y-1/2 z-10 shadow-lg"
           color="secondary"
           size="sm"
-          variant="soft"
+          variant="solid"
           uniform
           onClick={() => emblaApi && emblaApi.scrollPrev()}
           type="button"
@@ -104,7 +122,7 @@ function AlbumsCarousel({ onSelect }) {
           className="absolute right-2 top-1/2 -translate-y-1/2 z-10 shadow-lg"
           color="secondary"
           size="sm"
-          variant="soft"
+          variant="solid"
           uniform
           onClick={() => emblaApi && emblaApi.scrollNext()}
           type="button"
@@ -120,38 +138,7 @@ function AlbumsCarousel({ onSelect }) {
   );
 }
 
-function App() {
-  const displayMode = useOpenAiGlobal("displayMode");
-  const [selectedAlbum, setSelectedAlbum] = React.useState(null);
-  const maxHeight = useMaxHeight() ?? undefined;
-
-  const handleSelectAlbum = (album) => {
-    setSelectedAlbum(album);
-    if (window?.webplus?.requestDisplayMode) {
-      window.webplus.requestDisplayMode({ mode: "fullscreen" });
-    }
-  };
-
-  return (
-    <div
-      className="relative antialiased w-full"
-      style={{
-        maxHeight,
-        height: displayMode === "fullscreen" ? maxHeight : undefined,
-      }}
-    >
-      {displayMode !== "fullscreen" && (
-        <AlbumsCarousel onSelect={handleSelectAlbum} />
-      )}
-
-      {displayMode === "fullscreen" && selectedAlbum && (
-        <FullscreenViewer album={selectedAlbum} />
-      )}
-    </div>
-  );
-}
-
-createRoot(document.getElementById("electronics-albums-root")).render(<App />);
+createRoot(document.getElementById("carousel-root")).render(<App />);
 
 export { App };
 export default App;

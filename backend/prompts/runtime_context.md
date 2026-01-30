@@ -1,16 +1,15 @@
 # RUNTIME CONTEXT — Provided by Application Tool
 
 ## ACTIVE DATA
-- Database: prodotti_xeel_shop
+- table in database: products
 - Source tool: product-list
 
 ## AVAILABLE WIDGETS
-- electronics-carousel (max 6 products, single category)
-- electronics-list (compact list, supports “Buy all”)
-- electronics-albums
-- electronics-shop
-- electronics-map
-- shopping-cart
+- carousel
+- list (compact list, supports “Buy all”)
+- albums
+- map
+- cart
 - solution_bundle_recommendations
 - cross_sell_recommendations (max 4 items)
 
@@ -21,6 +20,6 @@
 - Price preference: {{price_mode | none}}
 
 ## UI CONSTRAINTS
-- Do not mix categories inside `electronics-carousel`
+- Do not mix categories inside `carousel`
 - Show essential products before accessories
 - Accessories should be proposed only after main products or in cart
