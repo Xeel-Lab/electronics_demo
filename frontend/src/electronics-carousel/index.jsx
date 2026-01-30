@@ -9,12 +9,10 @@ import { useOpenAiGlobal } from "../use-openai-global";
 import { AnimatePresence } from "framer-motion";
 import ProductDetails from "../utils/ProductDetails";
 
-const MAX_PRODUCTS_CAROUSEL = 6; // Limite massimo di prodotti da visualizzare nel carosello
-
 function App() {
   // Leggi dati da toolOutput (popolato dal server quando recupera dati da MotherDuck)
   const toolOutput = useOpenAiGlobal("toolOutput");
-  const places = (toolOutput?.places || []).slice(0, MAX_PRODUCTS_CAROUSEL);
+  const places = (toolOutput?.places || []);
   const [selectedPlace, setSelectedPlace] = React.useState(null);
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "center",
