@@ -15,6 +15,7 @@ from __future__ import annotations
 from dotenv import load_dotenv
 import duckdb
 import os
+import stripe
 from copy import deepcopy
 from dataclasses import dataclass
 from functools import lru_cache
@@ -37,6 +38,7 @@ for path in env_paths:
         load_dotenv(dotenv_path=env_path)
         break
 
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 @dataclass(frozen=True)
 class Widget:
@@ -78,6 +80,15 @@ widgets: List[Widget] = [
         html=_load_widget_html("carousel"),
         response_text="Rendered a carousel!",
     ),
+        Widget(
+        identifier="shopping-cart",
+        title="Shopping Cart",
+        template_uri="ui://widget/shopping-cart.html",
+        invoking="Open shopping cart",
+        invoked="Opened shopping cart",
+        html=_load_widget_html("shopping-cart"),
+        response_text="Rendered the shopping cart!",
+    ),
 ]
 
 
@@ -110,7 +121,7 @@ def _transport_security_settings() -> TransportSecuritySettings:
     )
 
 def get_motherduck_connection() -> duckdb.DuckDBPyConnection:
-    md_token = os.getenv("motherduck_token")
+    md_token = os.getenv("motherduck_token_2")
     if not md_token:
         raise ValueError("motherduck_token non trovato nelle variabili d'ambiente")
     connection = duckdb.connect(f"md:electronics_demo?motherduck_token={md_token}")
@@ -198,7 +209,26 @@ async def _list_tools() -> List[types.Tool]:
                 "openWorldHint": False,
                 "readOnlyHint": True,
             },
-        )
+        ),
+        types.Tool(
+            name="create_payment_intent",
+            title="Create PaymentIntent",
+            description="Creates a Stripe PaymentIntent and returns client_secret",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "amount": {"type": "integer", "description": "Amount in cents"},
+                    "currency": {"type": "string", "description": "Currency code (e.g. eur)"},
+                },
+                "required": ["amount"],
+                "additionalProperties": False,
+            },
+            annotations={
+                "destructiveHint": True,
+                "openWorldHint": True,
+                "readOnlyHint": False,
+            },
+        ),
     ]
 
 @mcp._mcp_server.list_resources()
@@ -253,6 +283,15 @@ async def _handle_read_resource(req: types.ReadResourceRequest) -> types.ServerR
     return types.ServerResult(types.ReadResourceResult(contents=contents))
 
 
+PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
+DEVELOPER_CORE_PATH = PROMPTS_DIR / "developer_core.md"
+RUNTIME_CONTEXT_PATH = PROMPTS_DIR / "runtime_context.md"
+
+def _load_prompt_text(path: Path) -> str:
+    if not path.exists():
+        return ""
+    return path.read_text(encoding="utf8")
+
 async def _call_tool_request(req: types.CallToolRequest) -> types.ServerResult:
     if req.params.name == "min":
         developer_core = _load_prompt_text(DEVELOPER_CORE_PATH)
@@ -263,6 +302,38 @@ async def _call_tool_request(req: types.CallToolRequest) -> types.ServerResult:
                 structuredContent={
                     "developer_core": developer_core,
                     "runtime_context": runtime_context,
+                },
+            )
+        )
+
+    if req.params.name == "create_payment_intent":
+        args = req.params.arguments or {}
+        amount = int(args.get("amount", 0))
+        currency = (args.get("currency") or "eur").lower()
+
+        if amount <= 0:
+            return types.ServerResult(
+                types.CallToolResult(
+                    content=[types.TextContent(type="text", text="Invalid amount.")],
+                    isError=True,
+                )
+            )
+
+        payment_method = os.getenv("STRIPE_TEST_PAYMENT_METHOD", "pm_card_visa")
+        intent = stripe.PaymentIntent.create(
+            amount=amount,
+            currency=currency,
+            payment_method=payment_method,
+            confirm=True,
+            automatic_payment_methods={"enabled": True, "allow_redirects": "never"},
+        )
+
+        return types.ServerResult(
+            types.CallToolResult(
+                content=[types.TextContent(type="text", text="PaymentIntent created.")],
+                structuredContent={
+                    "status": intent.status,
+                    "payment_intent_id": intent.id,
                 },
             )
         )
@@ -361,14 +432,3 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run("main:app", host="0.0.0.0", port=8000)
-
-# region: esposizione prompts
-
-PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
-DEVELOPER_CORE_PATH = PROMPTS_DIR / "developer_core.md"
-RUNTIME_CONTEXT_PATH = PROMPTS_DIR / "runtime_context.md"
-
-def _load_prompt_text(path: Path) -> str:
-    if not path.exists():
-        return ""
-    return path.read_text(encoding="utf8")
