@@ -1,6 +1,5 @@
 import type { CartItem } from "../../types";
 import SafeImage from "../../map/SafeImage.jsx";
-import { getIconForItem } from "../cart-icons";
 
 type CartItemsListProps = {
   items: CartItem[];
@@ -55,10 +54,7 @@ function CartItemsList({
                   proxyBaseUrl={proxyBaseUrl}
                 />
               ) : (
-                (() => {
-                  const Icon = getIconForItem(item.name);
-                  return <Icon className="h-6 w-6" />;
-                })()
+                <div className="h-6 w-6 rounded-full bg-black/10" />
               )}
             </div>
             <div>

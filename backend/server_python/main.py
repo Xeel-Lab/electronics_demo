@@ -80,7 +80,7 @@ widgets: List[Widget] = [
         html=_load_widget_html("carousel"),
         response_text="Rendered a carousel!",
     ),
-        Widget(
+    Widget(
         identifier="shopping-cart",
         title="Shopping Cart",
         template_uri="ui://widget/shopping-cart.html",
