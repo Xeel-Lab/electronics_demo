@@ -52,7 +52,7 @@ export default function ProductDetails({
   const proxyBaseUrl = useProxyBaseUrl();
   const { addToCart, isInCart } = useCart();
 
-  const formatPrice = (value: number) => `€${value.toFixed(2)}`;
+  const formatPrice = (value: number) => `${value.toFixed(2)}`;
 
   const parsePriceValue = (value: number | string | undefined) => {
     if (typeof value === "number" && Number.isFinite(value)) {
@@ -268,7 +268,7 @@ export default function ProductDetails({
                     {typeof place.rating === "number" ? place.rating.toFixed(1) : place.rating}
                   </>
                 )}
-                {place.price && <span>· {place.price}</span>}
+                {place.price && <span>· {place.price} €</span>}
                 {place.city && <span>· {place.city}</span>}
               </div>
               <div className="mt-3 flex flex-row items-center gap-3 font-medium">

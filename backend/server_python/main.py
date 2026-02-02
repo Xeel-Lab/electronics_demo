@@ -137,29 +137,41 @@ def get_motherduck_connection() -> duckdb.DuckDBPyConnection:
     print("Connected to MotherDuck")
     return connection
 
-
-def get_products_from_motherduck(category: list[str], context: list[str], brand: str, min_price: float, max_price: float) -> list[dict]:
-    query = """
-        SELECT *
-        FROM main.products
-    """
+def get_products_from_motherduck(
+    category: list[str],
+    context: list[str],
+    brand: str,
+    min_price: float,
+    max_price: float,
+    limit_per_category: int | None = None,
+) -> list[dict]:
+    query = "SELECT * FROM main.products"
     if category:
-        in_list = ", ".join(f"'{c}'" for c in category)
+        in_list = f", ".join(f"'{c}'" for c in category)
         # match if categories IN list OR description contains at least one term (case-insensitive)
         desc_escaped = [c.replace("'", "''") for c in category]
         desc_conditions = " OR ".join(f"description ILIKE '%{t}%'" for t in desc_escaped)
         query += f" WHERE (categories COLLATE \"NOCASE\" IN ({in_list}) OR ({desc_conditions}))"
     if context:
-        in_list = ", ".join(f"'{c}'" for c in context)
+        in_list = f", ".join(f"'{c}'" for c in context)
         desc_escaped = [c.replace("'", "''") for c in context]
         desc_conditions = " OR ".join(f"context ILIKE '%{t}%'" for t in desc_escaped)
-        query += f" WHERE (context COLLATE \"NOCASE\" IN ({in_list} OR ({desc_conditions}))"
+        query += "WHERE" in query and f" OR (context COLLATE \"NOCASE\" IN ({in_list}) OR ({desc_conditions}))" or f" WHERE (context COLLATE \"NOCASE\" IN ({in_list} OR ({desc_conditions}))"
     if brand:
         query += "WHERE" in query and f" AND brand = '{brand}' COLLATE \"NOCASE\"" or f" WHERE brand = '{brand}' COLLATE \"NOCASE\""
     if min_price:
         query += "WHERE" in query and f" AND price >= {min_price}" or f" WHERE price >= {min_price}"
     if max_price:
         query += "WHERE" in query and f" AND price <= {max_price}" or f" WHERE price <= {max_price}"
+    if limit_per_category is not None and limit_per_category > 0:
+        # Al massimo N risultati per valore di categories (ordinati per price)
+        query = (
+            "SELECT * EXCLUDE (rn) FROM ("
+            "SELECT *, ROW_NUMBER() OVER (PARTITION BY categories ORDER BY price) AS rn FROM ("
+            + query
+            + ") subq) WHERE rn <= " + str(limit_per_category)
+        )
+    print(query)
     with get_motherduck_connection() as con:
         df = con.execute(query).fetchdf()
         return df.to_dict(orient="records")
@@ -405,12 +417,13 @@ async def _call_tool_request(req: types.CallToolRequest) -> types.ServerResult:
     if widget.identifier == "carousel":
         arguments = req.params.arguments or {}
         limit = arguments.get("limit", 20)
+        context = arguments.get("context")
         category = arguments.get("category")
         brand = arguments.get("brand")
         min_price = arguments.get("min_price")
         max_price = arguments.get("max_price")
         try:
-            products = get_products_from_motherduck(category, brand, min_price, max_price)
+            products = get_products_from_motherduck(category, context, brand, min_price, max_price)
         except Exception as e:
             print(f"Error fetching products from MotherDuck: {e}")
             return types.ServerResult(
@@ -439,12 +452,13 @@ async def _call_tool_request(req: types.CallToolRequest) -> types.ServerResult:
         )
     elif widget.identifier == "list":
         arguments = req.params.arguments or {}
+        context = arguments.get("context")
         category = arguments.get("category")
         brand = arguments.get("brand")
         min_price = arguments.get("min_price")
         max_price = arguments.get("max_price")
         try:
-            products = get_products_from_motherduck(category, brand, min_price, max_price)
+            products = get_products_from_motherduck(category, context, brand, min_price, max_price, 1)
         except Exception as e:
             print(f"Error fetching products from MotherDuck: {e}")
             return types.ServerResult(
