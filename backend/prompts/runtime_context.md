@@ -10,7 +10,7 @@
 - albums
 - map
 - cart
-- solution_bundle_recommendations
+- solution_bundle_recommendations -> **ritorna il risultato con il widget list**
 - cross_sell_recommendations (max 4 items)
 
 ## CURRENT STATE
