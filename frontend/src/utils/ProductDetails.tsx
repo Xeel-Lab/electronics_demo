@@ -12,7 +12,7 @@ type ProductDetailsProps = {
     name: string;
     price?: string;
     description?: string;
-    thumbnail?: string;
+    image?: string;
     rating?: number;
     stock?: number;
     city?: string;
@@ -137,7 +137,7 @@ export default function ProductDetails({
           candidatePriceValue != null &&
           Number.isFinite(candidatePriceValue)
         ) {
-          const priceDelta = Math.abs(candidatePriceValue - currentPriceValue);
+          const priceDelta = Math.abs(candidatePriceValue - (currentPriceValue ?? 0));
           priceScore =
             priceDelta <= priceBand ? 1 - priceDelta / priceBand : -0.5;
         }
@@ -195,7 +195,7 @@ export default function ProductDetails({
       name: place.name,
       price: place.price,
       description: place.description,
-      thumbnail: place.thumbnail,
+      thumbnail: place.image,
     });
   };
 
@@ -251,7 +251,7 @@ export default function ProductDetails({
           </Button>
           <div className="relative mt-2 xl:mt-0 px-2 xl:px-0">
             <SafeImage
-              src={place.thumbnail || ""}
+              src={place.image || ""}
               alt={place.name}
               className="w-full rounded-3xl xl:rounded-none h-80 object-cover xl:rounded-t-2xl"
               proxyBaseUrl={proxyBaseUrl}
@@ -286,14 +286,6 @@ export default function ProductDetails({
                 >
                   <ShoppingCart className="h-4 w-4 mr-2" />
                   {inCart ? "Nel carrello" : "Aggiungi al carrello"}
-                </Button>
-                <Button
-                  color="primary"
-                  variant="outline"
-                  size="sm"
-                  className="border-[#F46C21]/50 text-[#F46C21]"
-                >
-                  Contact
                 </Button>
               </div>
               <div className="text-sm mt-5">
@@ -382,11 +374,11 @@ export default function ProductDetails({
                             </p>
                             {priceLabel ? (
                               <p className="text-sm text-black/70 mt-1">
-                                {priceLabel}
+                                {priceLabel} €
                               </p>
                             ) : null}
                             {badgeText ? (
-                              <span className="mt-2 inline-flex max-w-full items-center rounded-full bg-black/[0.06] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-black/70 line-clamp-1">
+                              <span className="mt-2 inline-flex max-w-full items-center rounded-sm bg-black/[0.06] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-black/70 line-clamp-1">
                                 {badgeText}
                               </span>
                             ) : null}

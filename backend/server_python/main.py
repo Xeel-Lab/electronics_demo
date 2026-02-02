@@ -77,6 +77,15 @@ widgets: List[Widget] = [
         html=_load_widget_html("electronics-carousel"),
         response_text="Rendered a carousel!",
     ),
+    Widget(
+        identifier="list",
+        title="Show List of Products",
+        template_uri="ui://widget/list.html",
+        invoking="List some spots",
+        invoked="Show a list of products",
+        html=_load_widget_html("list"),
+        response_text="Showed a list of products!",
+    ),
 ]
 
 
@@ -117,11 +126,23 @@ def get_motherduck_connection() -> duckdb.DuckDBPyConnection:
     return connection
 
 
-def get_products_from_motherduck() -> list[dict]:
+def get_products_from_motherduck(category: list[str], brand: str, min_price: float, max_price: float) -> list[dict]:
     query = """
         SELECT *
         FROM main.products
     """
+    if category:
+        in_list = ", ".join(f"'{c}'" for c in category)
+        # match if categories IN list OR description contains at least one term (case-insensitive)
+        desc_escaped = [c.replace("'", "''") for c in category]
+        desc_conditions = " OR ".join(f"description ILIKE '%{t}%'" for t in desc_escaped)
+        query += f" WHERE (categories COLLATE \"NOCASE\" IN ({in_list}) OR ({desc_conditions}))"
+    if brand:
+        query += "WHERE" in query and f" AND brand = '{brand}' COLLATE \"NOCASE\"" or f" WHERE brand = '{brand}' COLLATE \"NOCASE\""
+    if min_price:
+        query += "WHERE" in query and f" AND price >= {min_price}" or f" WHERE price >= {min_price}"
+    if max_price:
+        query += "WHERE" in query and f" AND price <= {max_price}" or f" WHERE price <= {max_price}"
     with get_motherduck_connection() as con:
         df = con.execute(query).fetchdf()
         return df.to_dict(orient="records")
@@ -139,7 +160,24 @@ TOOL_INPUT_SCHEMA: Dict[str, Any] = {
             "type": "integer",
             "description": "Max number of products to return.",
             "minimum": 1,
-        }
+        },
+        "category": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "REQUIRED format: array of strings, never a single string. Pass all synonyms/variants for the category (e.g. [\"smartphone\", \"cell phone\", \"mobile phone\", \"smartphones\", \"telefoni\"]). Include plural, singular, different languages, spacing variants—every term that could match the category. You MUST pass it at least in english and italian.",
+        },
+        "brand": {
+            "type": "string",
+            "description": "Brand of products to return.",
+        },
+        "min_price": {
+            "type": "number",
+            "description": "Minimum price of products to return.",
+        },
+        "max_price": {
+            "type": "number",
+            "description": "Maximum price of products to return.",
+        },
     },
     "additionalProperties": False,
 }
@@ -171,7 +209,7 @@ async def _list_tools() -> List[types.Tool]:
         types.Tool(
             name=widget.identifier,
             title=widget.title,
-            description=widget.title,
+            description=f"{widget.title}. When filtering by category, always pass 'category' as an array of strings (e.g. [\"phones\", \"smartphones\"]), never as a single string, you MUST pass it at least in english and italian.",
             inputSchema=deepcopy(TOOL_INPUT_SCHEMA),
             _meta=_tool_meta(widget),
             # To disable the approval prompt for the tools
@@ -257,8 +295,12 @@ async def _call_tool_request(req: types.CallToolRequest) -> types.ServerResult:
     if widget.identifier == "electronics-carousel":
         arguments = req.params.arguments or {}
         limit = arguments.get("limit")
+        category = arguments.get("category")
+        brand = arguments.get("brand")
+        min_price = arguments.get("min_price")
+        max_price = arguments.get("max_price")
         try:
-            products = get_products_from_motherduck()
+            products = get_products_from_motherduck(category, brand, min_price, max_price)
         except Exception as e:
             print(f"Error fetching products from MotherDuck: {e}")
             return types.ServerResult(
@@ -274,6 +316,38 @@ async def _call_tool_request(req: types.CallToolRequest) -> types.ServerResult:
             )
         if isinstance(limit, int) and limit > 0:
             products = products[:limit]
+        places = [
+            product
+            for index, product in enumerate(products)
+        ]
+        return types.ServerResult(
+            types.CallToolResult(
+                content=[types.TextContent(type="text", text="Fetched products.")],
+                structuredContent={"places": places},
+                _meta=meta,
+            )
+        )
+    elif widget.identifier == "list":
+        arguments = req.params.arguments or {}
+        category = arguments.get("category")
+        brand = arguments.get("brand")
+        min_price = arguments.get("min_price")
+        max_price = arguments.get("max_price")
+        try:
+            products = get_products_from_motherduck(category, brand, min_price, max_price)
+        except Exception as e:
+            print(f"Error fetching products from MotherDuck: {e}")
+            return types.ServerResult(
+                types.CallToolResult(
+                    content=[
+                        types.TextContent(
+                            type="text",
+                            text="MotherDuck connection failed while fetching products.",
+                        )
+                    ],
+                    isError=True,
+                )
+            )
         places = [
             product
             for index, product in enumerate(products)

@@ -21,7 +21,7 @@ function App() {
       name: place.name,
       price: place.price,
       description: place.description,
-      thumbnail: place.thumbnail,
+      thumbnail: place.image,
     });
   };
 
@@ -35,7 +35,7 @@ function App() {
         name: place.name,
         price: place.price,
         description: place.description,
-        thumbnail: place.thumbnail,
+        thumbnail: place.image,
       });
     });
   };
@@ -46,19 +46,12 @@ function App() {
     <div className="antialiased w-full text-black px-4 pb-2 border border-black/10 rounded-2xl sm:rounded-3xl overflow-hidden bg-white rounded-2xl shadow-sm">
       <div className="max-w-full">
         <div className="flex flex-row items-center gap-4 sm:gap-4 border-b border-black/5 py-4">
-          <div
-            className="sm:w-18 w-16 aspect-square rounded-xl bg-cover bg-center"
-            style={{
-              backgroundImage:
-                "url(https://persistent.oaistatic.com/electronics/title.png)",
-            }}
-          ></div>
           <div>
             <div className="text-base sm:text-xl font-medium">
-              Top Electronics Products
+              Product List
             </div>
             <div className="text-sm text-black/60">
-              A ranking of the best electronics products
+              A list of the best products available
             </div>
           </div>
           <div className="flex-auto hidden sm:flex justify-end pr-2">
@@ -74,7 +67,7 @@ function App() {
           </div>
         </div>
         <div className="min-w-full text-sm flex flex-col">
-          {places.slice(0, 7).map((place, i) => (
+          {places.map((place, i) => (
             <div
               key={place.id}
               className="px-3 -mx-2 rounded-2xl hover:bg-black/5 cursor-pointer"
@@ -96,7 +89,7 @@ function App() {
                 <div className="py-3 pr-3 min-w-0 w-full sm:w-3/5">
                   <div className="flex items-center gap-3">
                     <Image
-                      src={place.thumbnail}
+                      src={place.image}
                       alt={place.name}
                       className="h-10 w-10 sm:h-11 sm:w-11 rounded-lg object-cover ring ring-black/5"
                     />
@@ -120,7 +113,7 @@ function App() {
                           </span>
                         </div>
                         {place.price && (
-                          <div className="whitespace-nowrap">{place.price}</div>
+                          <div className="whitespace-nowrap">{place.price} €</div>
                         )}
                         <div className="whitespace-nowrap sm:hidden">
                           {place.city || "–"}
@@ -191,7 +184,7 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("electronics-list-root")).render(<App />);
+createRoot(document.getElementById("list-root")).render(<App />);
 
 export { App };
 export default App;
