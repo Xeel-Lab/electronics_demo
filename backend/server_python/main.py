@@ -15,6 +15,7 @@ from __future__ import annotations
 from dotenv import load_dotenv
 import duckdb
 import os
+import stripe
 from copy import deepcopy
 from dataclasses import dataclass
 from functools import lru_cache
@@ -26,6 +27,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.transport_security import TransportSecuritySettings
 
 env_paths = [
+    Path(__file__).resolve().parent / ".env.local",
     Path(__file__).resolve().parent.parent.parent / ".env",
 ]
 
@@ -36,6 +38,7 @@ for path in env_paths:
         load_dotenv(dotenv_path=env_path)
         break
 
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 @dataclass(frozen=True)
 class Widget:
@@ -69,12 +72,12 @@ def _load_widget_html(component_name: str) -> str:
 
 widgets: List[Widget] = [
     Widget(
-        identifier="electronics-carousel",
-        title="Show Electronics Carousel",
-        template_uri="ui://widget/electronics-carousel.html",
+        identifier="carousel",
+        title="Show Carousel",
+        template_uri="ui://widget/carousel.html",
         invoking="Carousel some spots",
         invoked="Served a fresh carousel",
-        html=_load_widget_html("electronics-carousel"),
+        html=_load_widget_html("carousel"),
         response_text="Rendered a carousel!",
     ),
     Widget(
@@ -85,6 +88,15 @@ widgets: List[Widget] = [
         invoked="Show a list of products",
         html=_load_widget_html("list"),
         response_text="Showed a list of products!",
+    ),
+    Widget(
+        identifier="shopping-cart",
+        title="Shopping Cart",
+        template_uri="ui://widget/shopping-cart.html",
+        invoking="Open shopping cart",
+        invoked="Opened shopping cart",
+        html=_load_widget_html("shopping-cart"),
+        response_text="Rendered the shopping cart!",
     ),
 ]
 
@@ -118,7 +130,7 @@ def _transport_security_settings() -> TransportSecuritySettings:
     )
 
 def get_motherduck_connection() -> duckdb.DuckDBPyConnection:
-    md_token = os.getenv("motherduck_token") or os.getenv("MOTHERDUCK_TOKEN")
+    md_token = os.getenv("motherduck_token")
     if not md_token:
         raise ValueError("motherduck_token non trovato nelle variabili d'ambiente")
     connection = duckdb.connect(f"md:electronics_demo?motherduck_token={md_token}")
@@ -169,12 +181,12 @@ TOOL_INPUT_SCHEMA: Dict[str, Any] = {
         "context": {
             "type": "array",
             "items": {"type": "string"},
-            "description": "The context where the products can be used, e.g. 'home', 'office', 'kitchen', 'bathroom', 'bedroom', 'living room', 'dining room', 'office', 'study', 'library', 'garage', 'garden', 'pool', 'spa', 'etc.'. You MUST pass it at least in english and italian. Include plural, singular, different languages, spacing variantsâ€”every term.",
+            "description": "The context where the products can be used, e.g. 'home', 'office', 'kitchen', 'bathroom', 'bedroom', 'living room', 'dining room', 'office', 'study', 'library', 'garage', 'garden', 'pool', 'spa', 'etc.'. You MUST pass it at least in english and italian. Include plural, singular, different languages, spacing variants—every term.",
         },
         "category": {
             "type": "array",
             "items": {"type": "string"},
-            "description": "REQUIRED format: array of strings, never a single string. Pass all synonyms/variants for the category (e.g. [\"smartphone\", \"cell phone\", \"mobile phone\", \"smartphones\", \"telefoni\"]). Include plural, singular, different languages, spacing variantsâ€”every term that could match the category. You MUST pass it at least in english and italian.",
+            "description": "REQUIRED format: array of strings, never a single string. Pass all synonyms/variants for the category (e.g. [\"smartphone\", \"cell phone\", \"mobile phone\", \"smartphones\", \"telefoni\"]). Include plural, singular, different languages, spacing variants—every term that could match the category. You MUST pass it at least in english and italian.",
         },
         "brand": {
             "type": "string",
@@ -216,6 +228,21 @@ def _tool_invocation_meta(widget: Widget) -> Dict[str, Any]:
 @mcp._mcp_server.list_tools()
 async def _list_tools() -> List[types.Tool]:
     return [
+        *[
+            types.Tool(
+                name=widget.identifier,
+                title=widget.title,
+                description=widget.title,
+                inputSchema=deepcopy(TOOL_INPUT_SCHEMA),
+                _meta=_tool_meta(widget),
+                annotations={
+                    "destructiveHint": False,
+                    "openWorldHint": False,
+                    "readOnlyHint": True,
+                },
+            )
+            for widget in widgets
+        ],
         types.Tool(
             name=widget.identifier,
             title=widget.title,
@@ -223,15 +250,45 @@ async def _list_tools() -> List[types.Tool]:
             inputSchema=deepcopy(TOOL_INPUT_SCHEMA),
             _meta=_tool_meta(widget),
             # To disable the approval prompt for the tools
+			annotations={
+                "destructiveHint": False,
+                "openWorldHint": False,
+                "readOnlyHint": True,
+            },
+		),		types.Tool(            name="min",
+            title="Expose prompts",
+            description="Returns developer_core.md and runtime_context.md",
+            inputSchema={
+                "type": "object",
+                "properties": {},
+                "additionalProperties": False,
+            },
             annotations={
                 "destructiveHint": False,
                 "openWorldHint": False,
                 "readOnlyHint": True,
             },
-        )
-        for widget in widgets
+        ),
+        types.Tool(
+            name="create_payment_intent",
+            title="Create PaymentIntent",
+            description="Creates a Stripe PaymentIntent and returns client_secret",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "amount": {"type": "integer", "description": "Amount in cents"},
+                    "currency": {"type": "string", "description": "Currency code (e.g. eur)"},
+                },
+                "required": ["amount"],
+                "additionalProperties": False,
+            },
+            annotations={
+                "destructiveHint": True,
+                "openWorldHint": True,
+                "readOnlyHint": False,
+            },
+        ),
     ]
-
 
 @mcp._mcp_server.list_resources()
 async def _list_resources() -> List[types.Resource]:
@@ -285,7 +342,61 @@ async def _handle_read_resource(req: types.ReadResourceRequest) -> types.ServerR
     return types.ServerResult(types.ReadResourceResult(contents=contents))
 
 
+PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
+DEVELOPER_CORE_PATH = PROMPTS_DIR / "developer_core.md"
+RUNTIME_CONTEXT_PATH = PROMPTS_DIR / "runtime_context.md"
+
+def _load_prompt_text(path: Path) -> str:
+    if not path.exists():
+        return ""
+    return path.read_text(encoding="utf8")
+
 async def _call_tool_request(req: types.CallToolRequest) -> types.ServerResult:
+    if req.params.name == "min":
+        developer_core = _load_prompt_text(DEVELOPER_CORE_PATH)
+        runtime_context = _load_prompt_text(RUNTIME_CONTEXT_PATH)
+        return types.ServerResult(
+            types.CallToolResult(
+                content=[types.TextContent(type="text", text="Loaded prompts.")],
+                structuredContent={
+                    "developer_core": developer_core,
+                    "runtime_context": runtime_context,
+                },
+            )
+        )
+
+    if req.params.name == "create_payment_intent":
+        args = req.params.arguments or {}
+        amount = int(args.get("amount", 0))
+        currency = (args.get("currency") or "eur").lower()
+
+        if amount <= 0:
+            return types.ServerResult(
+                types.CallToolResult(
+                    content=[types.TextContent(type="text", text="Invalid amount.")],
+                    isError=True,
+                )
+            )
+
+        payment_method = os.getenv("STRIPE_TEST_PAYMENT_METHOD", "pm_card_visa")
+        intent = stripe.PaymentIntent.create(
+            amount=amount,
+            currency=currency,
+            payment_method=payment_method,
+            confirm=True,
+            automatic_payment_methods={"enabled": True, "allow_redirects": "never"},
+        )
+
+        return types.ServerResult(
+            types.CallToolResult(
+                content=[types.TextContent(type="text", text="PaymentIntent created.")],
+                structuredContent={
+                    "status": intent.status,
+                    "payment_intent_id": intent.id,
+                },
+            )
+        )
+
     widget = WIDGETS_BY_ID.get(req.params.name)
     if widget is None:
         return types.ServerResult(
@@ -302,9 +413,9 @@ async def _call_tool_request(req: types.CallToolRequest) -> types.ServerResult:
 
     meta = _tool_invocation_meta(widget)
 
-    if widget.identifier == "electronics-carousel":
+    if widget.identifier == "carousel":
         arguments = req.params.arguments or {}
-        limit = arguments.get("limit")
+        limit = arguments.get("limit", 20)
         category = arguments.get("category")
         brand = arguments.get("brand")
         min_price = arguments.get("min_price")

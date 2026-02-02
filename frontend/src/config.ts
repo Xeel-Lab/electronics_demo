@@ -21,7 +21,7 @@ export function getServerBaseUrl(): string {
     return injected;
   }
 
-  // Check for script source that looks like our server (electronics-carousel, etc.)
+  // Check for script source that looks like our server (carousel, etc.)
   if (typeof document !== "undefined") {
     const scripts = document.getElementsByTagName("script");
     for (let script of scripts) {
@@ -29,7 +29,7 @@ export function getServerBaseUrl(): string {
         try {
           const url = new URL(script.src);
           // Check if it's from our server (contains /assets/ or electronics in path)
-          if (url.pathname.includes("/assets/") || url.pathname.includes("electronics")) {
+          if (url.pathname.includes("/assets/") || url.pathname.includes("carousel")) {
             return url.origin;
           }
         } catch (e) {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CartItem } from "../types";
-import SafeImage from "../electronics/SafeImage.jsx";
+import SafeImage from "../map/SafeImage.jsx";
 import { useProxyBaseUrl } from "../use-proxy-base-url";
 import {
   crossSellFallbackCatalog,

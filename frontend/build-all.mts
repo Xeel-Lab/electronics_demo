@@ -14,18 +14,13 @@ const PER_ENTRY_CSS_IGNORE = "**/*.module.*".split(",").map((s) => s.trim());
 const GLOBAL_CSS_LIST = [path.resolve("src/index.css")];
 
 const targets: string[] = [
-  "todo",
-  "solar-system",
-  "electronics",
-  "electronics-carousel",
-  "electronics-list",
-  "electronics-albums",
-  "electronics-shop",
+  "map",
+  "carousel",
   "list",
+  "albums",
   "mixed-auth-search",
   "mixed-auth-past-orders",
-  "kitchen-sink-lite",
-  "shopping-cart",
+  "shopping-cart"
 ];
 
 function wrapEntryPlugin(

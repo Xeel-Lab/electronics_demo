@@ -29,7 +29,7 @@ export default function Inspector({ place, onClose }) {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.98 }}
       transition={{ type: "spring", bounce: 0, duration: 0.25 }}
-      className="electronics-inspector absolute z-30 top-0 bottom-4 left-0 right-auto xl:left-auto xl:right-6 md:z-20 w-[340px] xl:w-[360px] xl:top-6 xl:bottom-8 pointer-events-auto"
+      className="map-inspector absolute z-30 top-0 bottom-4 left-0 right-auto xl:left-auto xl:right-6 md:z-20 w-[340px] xl:w-[360px] xl:top-6 xl:bottom-8 pointer-events-auto"
     >
       <Button
         aria-label="Close details"
@@ -90,17 +90,17 @@ export default function Inspector({ place, onClose }) {
               {[
                 {
                   user: "Leo M.",
-                  avatar: "https://persistent.oaistatic.com/electronics/user1.png",
+                  avatar: "https://persistent.oaistatic.com/map/user1.png",
                   text: "Fantastic crust and balanced toppings. The marinara is spot on!",
                 },
                 {
                   user: "Priya S.",
-                  avatar: "https://persistent.oaistatic.com/electronics/user2.png",
+                  avatar: "https://persistent.oaistatic.com/map/user2.png",
                   text: "Cozy vibe and friendly staff. Quick service on a Friday night.",
                 },
                 {
                   user: "Maya R.",
-                  avatar: "https://persistent.oaistatic.com/electronics/user3.png",
+                  avatar: "https://persistent.oaistatic.com/map/user3.png",
                   text: "Great for sharing. Will definitely come back with friends.",
                 },
               ].map((review, idx) => (
