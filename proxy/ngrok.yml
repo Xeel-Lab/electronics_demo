@@ -4,4 +4,4 @@ tunnels:
   proxy:
     proto: http
     addr: 80
-    domain: secondary-dev.ngrok.app
+    domain: brandon-postsystolic-similarly.ngrok-free.dev
