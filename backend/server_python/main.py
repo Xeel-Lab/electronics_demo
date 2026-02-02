@@ -126,7 +126,7 @@ def get_motherduck_connection() -> duckdb.DuckDBPyConnection:
     return connection
 
 
-def get_products_from_motherduck(category: list[str], brand: str, min_price: float, max_price: float) -> list[dict]:
+def get_products_from_motherduck(category: list[str], context: list[str], brand: str, min_price: float, max_price: float) -> list[dict]:
     query = """
         SELECT *
         FROM main.products
@@ -137,6 +137,11 @@ def get_products_from_motherduck(category: list[str], brand: str, min_price: flo
         desc_escaped = [c.replace("'", "''") for c in category]
         desc_conditions = " OR ".join(f"description ILIKE '%{t}%'" for t in desc_escaped)
         query += f" WHERE (categories COLLATE \"NOCASE\" IN ({in_list}) OR ({desc_conditions}))"
+    if context:
+        in_list = ", ".join(f"'{c}'" for c in context)
+        desc_escaped = [c.replace("'", "''") for c in context]
+        desc_conditions = " OR ".join(f"context ILIKE '%{t}%'" for t in desc_escaped)
+        query += f" WHERE (context COLLATE \"NOCASE\" IN ({in_list} OR ({desc_conditions}))"
     if brand:
         query += "WHERE" in query and f" AND brand = '{brand}' COLLATE \"NOCASE\"" or f" WHERE brand = '{brand}' COLLATE \"NOCASE\""
     if min_price:
@@ -160,6 +165,11 @@ TOOL_INPUT_SCHEMA: Dict[str, Any] = {
             "type": "integer",
             "description": "Max number of products to return.",
             "minimum": 1,
+        },
+        "context": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "The context where the products can be used, e.g. 'home', 'office', 'kitchen', 'bathroom', 'bedroom', 'living room', 'dining room', 'office', 'study', 'library', 'garage', 'garden', 'pool', 'spa', 'etc.'. You MUST pass it at least in english and italian. Include plural, singular, different languages, spacing variants—every term.",
         },
         "category": {
             "type": "array",
@@ -209,7 +219,7 @@ async def _list_tools() -> List[types.Tool]:
         types.Tool(
             name=widget.identifier,
             title=widget.title,
-            description=f"{widget.title}. When filtering by category, always pass 'category' as an array of strings (e.g. [\"phones\", \"smartphones\"]), never as a single string, you MUST pass it at least in english and italian.",
+            description=f"{widget.title}. When filtering by category or context, always pass 'category' and 'context' as an array of strings (e.g. [\"phones\", \"smartphones\"], [\"home\", \"office\"]), never as a single string, you MUST pass it at least in english and italian.",
             inputSchema=deepcopy(TOOL_INPUT_SCHEMA),
             _meta=_tool_meta(widget),
             # To disable the approval prompt for the tools
