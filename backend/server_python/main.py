@@ -121,7 +121,7 @@ def _transport_security_settings() -> TransportSecuritySettings:
     )
 
 def get_motherduck_connection() -> duckdb.DuckDBPyConnection:
-    md_token = os.getenv("motherduck_token_2")
+    md_token = os.getenv("motherduck_token")
     if not md_token:
         raise ValueError("motherduck_token non trovato nelle variabili d'ambiente")
     connection = duckdb.connect(f"md:electronics_demo?motherduck_token={md_token}")
