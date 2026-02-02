@@ -181,12 +181,12 @@ TOOL_INPUT_SCHEMA: Dict[str, Any] = {
         "context": {
             "type": "array",
             "items": {"type": "string"},
-            "description": "The context where the products can be used, e.g. 'home', 'office', 'kitchen', 'bathroom', 'bedroom', 'living room', 'dining room', 'office', 'study', 'library', 'garage', 'garden', 'pool', 'spa', 'etc.'. You MUST pass it at least in english and italian. Include plural, singular, different languages, spacing variants—every term.",
+            "description": "The context where the products can be used, e.g. 'home', 'office', 'kitchen', 'bathroom', 'bedroom', 'living room', 'dining room', 'office', 'study', 'library', 'garage', 'garden', 'pool', 'spa', 'etc.'. You MUST pass it at least in english and italian. Include plural, singular, different languages, spacing variantsï¿½every term.",
         },
         "category": {
             "type": "array",
             "items": {"type": "string"},
-            "description": "REQUIRED format: array of strings, never a single string. Pass all synonyms/variants for the category (e.g. [\"smartphone\", \"cell phone\", \"mobile phone\", \"smartphones\", \"telefoni\"]). Include plural, singular, different languages, spacing variants—every term that could match the category. You MUST pass it at least in english and italian.",
+            "description": "REQUIRED format: array of strings, never a single string. Pass all synonyms/variants for the category (e.g. [\"smartphone\", \"cell phone\", \"mobile phone\", \"smartphones\", \"telefoni\"]). Include plural, singular, different languages, spacing variantsï¿½every term that could match the category. You MUST pass it at least in english and italian.",
         },
         "brand": {
             "type": "string",
@@ -232,7 +232,7 @@ async def _list_tools() -> List[types.Tool]:
             types.Tool(
                 name=widget.identifier,
                 title=widget.title,
-                description=widget.title,
+                description=f"{widget.title}. When filtering by category or context, always pass 'category' and 'context' as an array of strings (e.g. [\"phones\", \"smartphones\"], [\"home\", \"office\"]), never as a single string, you MUST pass it at least in english and italian.",
                 inputSchema=deepcopy(TOOL_INPUT_SCHEMA),
                 _meta=_tool_meta(widget),
                 annotations={
@@ -244,18 +244,7 @@ async def _list_tools() -> List[types.Tool]:
             for widget in widgets
         ],
         types.Tool(
-            name=widget.identifier,
-            title=widget.title,
-            description=f"{widget.title}. When filtering by category or context, always pass 'category' and 'context' as an array of strings (e.g. [\"phones\", \"smartphones\"], [\"home\", \"office\"]), never as a single string, you MUST pass it at least in english and italian.",
-            inputSchema=deepcopy(TOOL_INPUT_SCHEMA),
-            _meta=_tool_meta(widget),
-            # To disable the approval prompt for the tools
-			annotations={
-                "destructiveHint": False,
-                "openWorldHint": False,
-                "readOnlyHint": True,
-            },
-		),		types.Tool(            name="min",
+            name="min",
             title="Expose prompts",
             description="Returns developer_core.md and runtime_context.md",
             inputSchema={
