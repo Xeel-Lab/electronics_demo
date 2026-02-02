@@ -35,6 +35,7 @@ Non condividere mai il token in chat o ticket pubblici. Se lo hai esposto, revoc
 ## Step 4) Avvia il backend (porta 8000)
 Questo e` l’equivalente del tuo start su Render:
 ```powershell
+cd backend
 pip install -r electronics_server_python/requirements.txt
 uvicorn electronics_server_python.main:app --host 0.0.0.0 --port 8000
 ```
@@ -43,6 +44,7 @@ Lascia questo terminale aperto.
 ## Step 5) Avvia il frontend (porta 5173)
 In un nuovo terminale:
 ```powershell
+cd frontend
 pnpm install
 pnpm build
 pnpm serve
@@ -133,8 +135,10 @@ curl http://localhost:8080
 
 ## Comandi rapidi (riassunto)
 ```powershell
+cd backend
 pip install -r electronics_server_python/requirements.txt
 uvicorn electronics_server_python.main:app --host 0.0.0.0 --port 8000
+cd ..\frontend
 pnpm install
 pnpm build
 pnpm serve
@@ -144,7 +148,7 @@ C:\Tools\ngrok\ngrok.exe http http://localhost:8080
 
 ## 1) Vai nella cartella
 ```powershell
-cd C:\Projects\sdk-electronics
+cd C:\Projects\electronics_demo
 ```
 ## Avvia tutto
 
